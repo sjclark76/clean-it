@@ -7,7 +7,7 @@ import { minutesToTime, timeToMinutes } from '@/shared/timeFunctions';
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const dbName = process.env.MONGODB_DB_NAME || 'jessiahs_car_cleaning';
 const bookingsCollectionName = 'bookings';
-const availabilitiesCollectionName = 'availabilities'; // To update admin's slots
+const availabilitiesCollectionName = 'availabilities';
 
 async function getConnectedClient() {
   const client = new MongoClient(uri, {
@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
   try {
     const bookingData = await request.json();
 
-    // Basic Validation
     if (
       !bookingData.date ||
       !bookingData.startTime ||
@@ -48,17 +47,17 @@ export async function POST(request: NextRequest) {
       availabilitiesCollectionName
     );
 
-    // 1. Prepare the new booking document
     const serviceStartTimeMinutes = timeToMinutes(bookingData.startTime);
-    const serviceEndTimeMinutes = serviceStartTimeMinutes + 120; // 2 hours
+    const serviceEndTimeMinutes = serviceStartTimeMinutes + 120; // 2 hours service
+    const bufferEndTimeMinutes = serviceEndTimeMinutes + 30; // 30 min buffer
 
-    const newBooking: Omit<Booking, '_id' | 'createdAt' | 'status'> & {
+    const newBookingDraft: Omit<Booking, '_id' | 'createdAt' | 'status'> & {
       status: 'pending_confirmation';
       createdAt: Date;
     } = {
       date: bookingData.date,
       startTime: bookingData.startTime,
-      endTime: minutesToTime(serviceEndTimeMinutes),
+      endTime: minutesToTime(serviceEndTimeMinutes), // Service end time
       clientName: bookingData.clientName,
       clientEmail: bookingData.clientEmail,
       clientPhone: bookingData.clientPhone,
@@ -68,8 +67,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     };
 
-    // 2. Check if the slots are still available (important for concurrency)
-    // This is a simplified check. For true atomicity, transactions are needed.
+    // 1. Check if the admin has marked these underlying half-hour slots as generally available
     const dayAvailability = await availabilitiesColl.findOne({
       date: bookingData.date,
     });
@@ -80,50 +78,73 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const slotsToBlockTimes: string[] = [];
+    const requiredSlotsForBlock: string[] = [];
+    // Check all half-hour slots covered by service + buffer (2.5 hours = 5 slots)
     for (let i = 0; i < 5; i++) {
-      // 4 for service, 1 for buffer = 5 half-hour slots
-      slotsToBlockTimes.push(minutesToTime(serviceStartTimeMinutes + i * 30));
+      requiredSlotsForBlock.push(
+        minutesToTime(serviceStartTimeMinutes + i * 30)
+      );
     }
 
-    const stillAvailable = slotsToBlockTimes.every((blockTime) => {
-      const slot = dayAvailability.slots.find((s) => s.time === blockTime);
-      return slot && slot.available;
-    });
+    const adminHasMadeSlotsAvailable = requiredSlotsForBlock.every(
+      (blockTime) => {
+        const slot = dayAvailability.slots.find((s) => s.time === blockTime);
+        return slot && slot.available;
+      }
+    );
 
-    if (!stillAvailable) {
+    if (!adminHasMadeSlotsAvailable) {
       return NextResponse.json(
         {
           message:
-            'The selected time slot is no longer available. Please choose another time.',
+            'The selected time slot is not generally available by the admin. Please choose another time.',
         },
         { status: 409 }
-      ); // 409 Conflict
+      );
+    }
+
+    // 2. Check for conflicts with existing non-cancelled bookings
+    const newBookingBlockStartMinutes = serviceStartTimeMinutes;
+    const newBookingBlockEndMinutes = bufferEndTimeMinutes;
+
+    const conflictingBookings = await bookingsColl
+      .find({
+        date: newBookingDraft.date,
+        status: { $ne: 'cancelled' },
+      })
+      .toArray();
+
+    for (const existingBooking of conflictingBookings) {
+      const existingBookingStartMinutes = timeToMinutes(
+        existingBooking.startTime
+      );
+      // Assuming existingBooking.endTime is service end, add buffer for full block
+      const existingBookingBlockEndMinutes =
+        timeToMinutes(existingBooking.endTime) + 30;
+
+      // Check for overlap: (StartA < EndB) AND (EndA > StartB)
+      if (
+        newBookingBlockStartMinutes < existingBookingBlockEndMinutes &&
+        newBookingBlockEndMinutes > existingBookingStartMinutes
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              'The selected time slot conflicts with an existing booking. Please choose another time.',
+          },
+          { status: 409 }
+        );
+      }
     }
 
     // 3. Insert the booking
-    const bookingResult = await bookingsColl.insertOne(newBooking as Booking);
-
-    // 4. Update the admin's availability slots
-    // Mark the 5 half-hour slots (2hr service + 0.5hr buffer) as unavailable
-    const updateResult = await availabilitiesColl.updateOne(
-      { date: bookingData.date },
-      { $set: { 'slots.$[elem].available': false } },
-      { arrayFilters: [{ 'elem.time': { $in: slotsToBlockTimes } }] }
+    const bookingResult = await bookingsColl.insertOne(
+      newBookingDraft as Booking
     );
 
-    if (updateResult.modifiedCount === 0 && updateResult.matchedCount > 0) {
-      // This might happen if somehow the slots were already marked unavailable by another process
-      // but the initial check passed. Log this for investigation.
-      console.warn(
-        `Availability slots for booking ${bookingResult.insertedId} on ${bookingData.date} at ${bookingData.startTime} were not updated, though a match was found.`
-      );
-    } else if (updateResult.matchedCount === 0) {
-      console.error(
-        `Failed to find availability document to update for date: ${bookingData.date} after booking ${bookingResult.insertedId}`
-      );
-      // Potentially roll back booking or notify admin
-    }
+    // 4. IMPORTANT: DO NOT update the admin's general availability (availabilities collection) here.
+    // The `availabilities` collection should only reflect what the admin sets as their general working hours.
+    // The fact that a slot is "booked" is determined by querying the `bookings` collection.
 
     return NextResponse.json(
       {
@@ -148,6 +169,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// GET handler remains the same
 export async function GET() {
   let mongoClient: MongoClient | null = null;
   try {
@@ -157,14 +179,13 @@ export async function GET() {
 
     const todayStr = new Date().toISOString().split('T')[0];
 
-    // Fetch bookings that are today or in the future, and not cancelled
     const upcomingBookings = await bookingsColl
       .find({
         date: { $gte: todayStr },
-        status: { $ne: 'cancelled' }, // Optionally filter out cancelled bookings
+        status: { $ne: 'cancelled' },
       })
-      .sort({ date: 1, startTime: 1 })
-      .toArray(); // Sort by date then start time
+      .sort({ date: 1, startTime: 1 }) // Sorting by string startTime "HH:MM AM/PM" needs custom logic if not purely lexicographical
+      .toArray();
 
     return NextResponse.json(upcomingBookings);
   } catch (error) {

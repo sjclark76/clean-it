@@ -237,24 +237,27 @@ export default function AdminAvailabilityPage() {
     slotTime: string,
     dayDate: string,
     bookings: Booking[]
-  ): boolean => {
+  ): Booking['status'] | null => {
+    // Changed return type
     const slotTimeInMinutes = timeToMinutes(slotTime);
-    const bookingsForDay = bookings.filter(
+    // Consider only non-cancelled bookings for overlap checks
+    const activeBookingsForDay = bookings.filter(
       (b) => b.date === dayDate && b.status !== 'cancelled'
     );
 
-    for (const booking of bookingsForDay) {
+    for (const booking of activeBookingsForDay) {
       const bookingStartMinutes = timeToMinutes(booking.startTime);
-      const bookingCoversUntilMinutes = bookingStartMinutes + 150; // 2hr service + 30min buffer
+      // The total block for a booking is service (2hr = 120min) + buffer (30min) = 150min
+      const bookingCoversUntilMinutes = bookingStartMinutes + 150;
 
       if (
         slotTimeInMinutes >= bookingStartMinutes &&
         slotTimeInMinutes < bookingCoversUntilMinutes
       ) {
-        return true;
+        return booking.status; // Return the status of the booking covering this slot
       }
     }
-    return false;
+    return null; // Slot is not covered by any active booking
   };
 
   const handleUpdateBookingStatus = async (

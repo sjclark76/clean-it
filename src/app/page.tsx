@@ -2,6 +2,8 @@
 // Make sure you have Tailwind CSS configured in your project.
 
 // For Next.js App Router, metadata is exported like this:
+import Link from 'next/link';
+
 export const metadata = {
   title: "Jessiah's Car Cleaning - Premium Detailing Services",
   description:
@@ -102,12 +104,12 @@ export default function HomePage() {
             {/*>*/}
             {/*  Services*/}
             {/*</a>*/}
-            <a
+            <Link
               href='#about'
               className='px-3 py-2 text-gray-700 hover:text-purple-600 transition-colors duration-300'
             >
               About
-            </a>
+            </Link>
             <a
               href='/booking' // Updated to link to booking page
               className='bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105'

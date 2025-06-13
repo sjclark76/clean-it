@@ -28,9 +28,9 @@ jobs:
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         # For preview deployments on PRs, you might use --environment=preview
 
-      - name: Build Project Artifacts
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-        # If you have specific build commands: npm run build
+      - name: Build Project for Production
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        # Or: npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel
         # This step only runs on pushes to the 'main' branch, not on PRs

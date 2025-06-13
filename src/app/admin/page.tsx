@@ -82,7 +82,15 @@ export default function AdminAvailabilityPage() {
     try {
       const response = await fetch('/api/availability');
       if (!response.ok) {
-        throw new Error('Failed to fetch upcoming availability');
+        // Directly handle the error instead of throwing
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'Failed to fetch upcoming availability' }));
+        setAvailabilityError(
+          errorData.message || 'Failed to fetch upcoming availability'
+        );
+        setIsLoadingAvailability(false); // Ensure loading state is updated
+        return; // Exit the function
       }
       const data: DayAvailability[] = await response.json();
       const todayStr = new Date().toISOString().split('T')[0];
@@ -92,6 +100,7 @@ export default function AdminAvailabilityPage() {
           .sort((a, b) => a.date.localeCompare(b.date))
       );
     } catch (err) {
+      // This catch block now handles unexpected errors (e.g., network issues)
       setAvailabilityError(
         err instanceof Error ? err.message : 'An unknown error occurred'
       );
@@ -104,9 +113,17 @@ export default function AdminAvailabilityPage() {
     setIsLoadingBookings(true);
     setBookingsError(null);
     try {
-      const response = await fetch('/api/bookings'); // Ensure this is your admin bookings endpoint
+      const response = await fetch('/api/bookings');
       if (!response.ok) {
-        throw new Error('Failed to fetch upcoming bookings');
+        // Directly handle the error instead of throwing
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'Failed to fetch upcoming bookings' }));
+        setBookingsError(
+          errorData.message || 'Failed to fetch upcoming bookings'
+        );
+        setIsLoadingBookings(false); // Ensure loading state is updated
+        return; // Exit the function
       }
       const data: Booking[] = await response.json();
       const sortedBookings = data.sort((a, b) => {
@@ -116,6 +133,7 @@ export default function AdminAvailabilityPage() {
       });
       setUpcomingBookings(sortedBookings);
     } catch (err) {
+      // This catch block now handles unexpected errors (e.g., network issues)
       setBookingsError(
         err instanceof Error ? err.message : 'An unknown error occurred'
       );
@@ -196,8 +214,6 @@ export default function AdminAvailabilityPage() {
         setEditMessage(result.message || 'Availability saved successfully!');
         setEditMessageType('success');
         fetchUpcomingAvailability(); // Refresh general availability
-        // Optionally, refresh bookings if saving availability could affect them
-        // fetchUpcomingBookings();
       } else {
         setEditMessage(result.message || 'Failed to save availability.');
         setEditMessageType('error');
@@ -238,34 +254,33 @@ export default function AdminAvailabilityPage() {
     dayDate: string,
     bookings: Booking[]
   ): Booking['status'] | null => {
-    // Changed return type
     const slotTimeInMinutes = timeToMinutes(slotTime);
-    // Consider only non-cancelled bookings for overlap checks
     const activeBookingsForDay = bookings.filter(
       (b) => b.date === dayDate && b.status !== 'cancelled'
     );
 
     for (const booking of activeBookingsForDay) {
       const bookingStartMinutes = timeToMinutes(booking.startTime);
-      // The total block for a booking is service (2hr = 120min) + buffer (30min) = 150min
-      const bookingCoversUntilMinutes = bookingStartMinutes + 150;
+      const bookingCoversUntilMinutes = bookingStartMinutes + 150; // Service (120min) + buffer (30min)
 
       if (
         slotTimeInMinutes >= bookingStartMinutes &&
         slotTimeInMinutes < bookingCoversUntilMinutes
       ) {
-        return booking.status; // Return the status of the booking covering this slot
+        return booking.status;
       }
     }
-    return null; // Slot is not covered by any active booking
+    return null;
   };
 
   const handleUpdateBookingStatus = async (
     bookingId: string | undefined,
     action: 'confirm' | 'cancel'
   ) => {
-    setIsUpdatingBooking(bookingId ?? '');
-    setEditMessage(null); // Clear general edit messages
+    if (!bookingId) return; // Guard against undefined bookingId
+
+    setIsUpdatingBooking(bookingId);
+    setEditMessage(null);
     setEditMessageType(null);
 
     try {
@@ -283,12 +298,7 @@ export default function AdminAvailabilityPage() {
             b._id?.toString() === bookingId ? result.booking : b
           )
         );
-        // Set a success message specific to this action if desired, or rely on UI change
-        // For example:
-        // setEditMessage(`Booking ${bookingId} ${action === 'confirm' ? 'confirmed' : 'cancelled'}.`);
-        // setEditMessageType('success');
       } else {
-        // Handle specific error from API or a generic one
         setEditMessage(result.message || `Failed to ${action} booking.`);
         setEditMessageType('error');
         console.error(`Failed to ${action} booking:`, result.message);
@@ -303,6 +313,7 @@ export default function AdminAvailabilityPage() {
       setIsUpdatingBooking(null);
     }
   };
+
   const handleConfirmBooking = async (bookingId: string | undefined) => {
     await handleUpdateBookingStatus(bookingId, 'confirm');
   };
@@ -340,9 +351,9 @@ export default function AdminAvailabilityPage() {
           error={bookingsError}
           formatDateDisplay={formatDateDisplay}
           formatBookingStatus={formatBookingStatus}
-          onConfirmBooking={handleConfirmBooking} // Pass down the handler
-          onCancelBooking={handleCancelBooking} // Pass down the handler
-          isUpdatingBooking={isUpdatingBooking} // Pass down loading state
+          onConfirmBooking={handleConfirmBooking}
+          onCancelBooking={handleCancelBooking}
+          isUpdatingBooking={isUpdatingBooking}
         />
 
         <GeneralAvailabilityList

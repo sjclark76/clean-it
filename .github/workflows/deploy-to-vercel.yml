@@ -1,0 +1,38 @@
+# .github/workflows/deploy-to-vercel.yml
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main # Or your default branch, e.g., master
+  pull_request: # Optional: build on pull requests to check for errors
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Or your preferred Node.js version
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        # For preview deployments on PRs, you might use --environment=preview
+
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        # If you have specific build commands: npm run build
+
+      - name: Deploy Project Artifacts to Vercel
+        # This step only runs on pushes to the 'main' branch, not on PRs
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

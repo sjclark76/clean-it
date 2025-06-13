@@ -3,14 +3,18 @@
 
 import { useState } from 'react';
 import AvailabilitySelector from '@/components/AvailabilitySelector';
-import FormField from '@/components/booking/FormField'; // Standard text/textarea fields
-import StyledDropdown from '@/components/shared/StyledDropdown'; // Import your new dropdown
+import FormField from '@/components/booking/FormField';
+import StyledDropdown from '@/components/shared/StyledDropdown';
 
 interface BookingFormProps {
-  services: string[]; // Keep this as an array of strings
+  services: string[];
+  onBookingSuccess: () => void; // Add this prop
 }
 
-export default function BookingForm({ services }: BookingFormProps) {
+export default function BookingForm({
+  services,
+  onBookingSuccess, // Destructure the prop
+}: BookingFormProps) {
   const [selectedBookingSlot, setSelectedBookingSlot] = useState<{
     date: string;
     time: string;
@@ -20,11 +24,8 @@ export default function BookingForm({ services }: BookingFormProps) {
     type: 'success' | 'error';
     text: string;
   } | null>(null);
-
-  // State for the service type dropdown
   const [selectedService, setSelectedService] = useState<string | null>(null);
 
-  // Transform services strings to StyledDropdownOption[]
   const serviceOptions = services.map((service) => ({
     label: service,
     value: service,
@@ -34,7 +35,7 @@ export default function BookingForm({ services }: BookingFormProps) {
     event.preventDefault();
     const form = event.currentTarget;
     setIsLoading(true);
-    setFormMessage(null);
+    setFormMessage(null); // Clear previous messages
 
     if (!selectedBookingSlot) {
       setFormMessage({
@@ -60,11 +61,10 @@ export default function BookingForm({ services }: BookingFormProps) {
       clientName: formData.get('name') as string,
       clientEmail: formData.get('email') as string,
       clientPhone: formData.get('phone') as string,
-      serviceType: selectedService, // Use state variable
+      serviceType: selectedService,
       notes: formData.get('notes') as string | undefined,
     };
 
-    // ... (rest of handleSubmit remains the same) ...
     try {
       const response = await fetch('/api/bookings', {
         method: 'POST',
@@ -75,16 +75,10 @@ export default function BookingForm({ services }: BookingFormProps) {
       const result = await response.json();
 
       if (response.ok) {
-        setFormMessage({
-          type: 'success',
-          text:
-            result.message ||
-            'Booking request successful! Jessiah will contact you to confirm.',
-        });
-        form.reset(); // Resets native form fields
+        form.reset();
         setSelectedBookingSlot(null);
-        setSelectedService(null); // Reset service dropdown state
-        // Consider how AvailabilitySelector might be refreshed if needed
+        setSelectedService(null);
+        onBookingSuccess(); // Call the success callback
       } else {
         setFormMessage({
           type: 'error',
@@ -105,26 +99,18 @@ export default function BookingForm({ services }: BookingFormProps) {
   const handleSlotSelected = (date: string, time: string) => {
     setSelectedBookingSlot({ date, time });
     setFormMessage(null);
-    // console.log('Slot selected in BookingForm:', date, time);
   };
 
   return (
     <>
-      {formMessage && (
+      {/* Only display error messages from the form itself */}
+      {formMessage && formMessage.type === 'error' && (
         <div
-          className={`p-3 mb-4 rounded-md text-sm ${
-            formMessage.type === 'success'
-              ? 'bg-green-100 text-green-700 border border-green-300'
-              : 'bg-red-100 text-red-700 border border-red-300'
-          }`}
+          className={`p-3 mb-4 rounded-md text-sm bg-red-100 text-red-700 border border-red-300`}
         >
           {formMessage.text}
         </div>
       )}
-      {/*
-        Note: The onSubmit is on the form, but StyledDropdown is controlled by `selectedService` state.
-        The `name` prop on StyledDropdown is less relevant here since we're grabbing the value from state.
-      */}
       <form onSubmit={handleSubmit} className='space-y-6'>
         <FormField
           id='name'
@@ -152,16 +138,14 @@ export default function BookingForm({ services }: BookingFormProps) {
 
         <AvailabilitySelector onSlotSelect={handleSlotSelected} />
 
-        {/* Use StyledDropdown directly */}
         <StyledDropdown
           id='service'
           label='Service Type'
-          name='service' // Still good for semantics, though value comes from state
+          name='service'
           value={selectedService}
           onChange={setSelectedService}
           options={serviceOptions}
           placeholder='Select a service'
-          // required // You'd handle this validation in handleSubmit
         />
 
         <FormField

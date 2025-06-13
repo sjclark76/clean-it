@@ -1,0 +1,19 @@
+version: '3.8' # Specifies the Docker Compose file format version
+
+services:
+  mongodb:
+    image: mongo:latest # Uses the latest official MongoDB image from Docker Hub
+    container_name: mongodb_jessiah # A custom name for your container
+    ports:
+      - "27017:27017" # Maps port 27017 on your host to port 27017 in the container
+    volumes:
+      - mongodb_data:/data/db # Persists MongoDB data to a Docker volume named 'mongodb_data'
+    environment:
+      # You can set MongoDB environment variables here if needed, for example:
+      # MONGO_INITDB_ROOT_USERNAME: root
+      # MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: jessiahs_car_cleaning # Optional: creates an initial database
+    restart: unless-stopped # Restarts the container unless it's manually stopped
+
+volumes:
+  mongodb_data: # Defines the Docker volume for data persistence

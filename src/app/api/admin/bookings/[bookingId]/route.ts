@@ -39,84 +39,106 @@ export async function PATCH(
     const db = await getDb();
     const bookingsColl = db.collection<Booking>(bookingsCollectionName);
 
-    const bookingToUpdate = await bookingsColl.findOne({
+    const bookingToUpdateOrDelete = await bookingsColl.findOne({
       _id: objectId, // Use ObjectId instance here
     });
 
-    if (!bookingToUpdate) {
+    if (!bookingToUpdateOrDelete) {
       return NextResponse.json(
         { message: 'Booking not found' },
         { status: 404 }
       );
     }
 
-    let newStatus: Booking['status'];
-
     if (action === 'confirm') {
-      if (bookingToUpdate.status !== 'pending_confirmation') {
+      if (bookingToUpdateOrDelete.status !== 'pending_confirmation') {
         return NextResponse.json(
           {
-            message: `Booking is already ${bookingToUpdate.status}. Only pending bookings can be confirmed.`,
+            message: `Booking is already ${bookingToUpdateOrDelete.status}. Only pending bookings can be confirmed.`,
           },
           { status: 409 }
         );
       }
-      newStatus = 'confirmed';
-    } else {
-      // action === 'cancel'
-      if (bookingToUpdate.status === 'cancelled') {
-        return NextResponse.json(
-          { message: 'Booking is already cancelled.' },
-          { status: 409 }
-        );
-      }
-      // Allow cancellation for 'pending_confirmation' or 'confirmed'
-      if (
-        bookingToUpdate.status !== 'pending_confirmation' &&
-        bookingToUpdate.status !== 'confirmed'
-      ) {
+      const newStatus = 'confirmed';
+      const updateResult = await bookingsColl.updateOne(
+        { _id: objectId },
+        { $set: { status: newStatus } }
+      );
+
+      if (updateResult.modifiedCount === 0) {
         return NextResponse.json(
           {
-            message: `Cannot cancel booking with status: ${bookingToUpdate.status}.`,
+            message:
+              'Booking status not updated. It might have been changed concurrently or an issue occurred.',
           },
           { status: 409 }
         );
       }
-      newStatus = 'cancelled';
-    }
 
-    const updateResult = await bookingsColl.updateOne(
-      { _id: objectId }, // Use ObjectId instance here
-      { $set: { status: newStatus } }
-    );
+      const updatedBooking = await bookingsColl.findOne({
+        _id: objectId,
+      });
 
-    if (updateResult.modifiedCount === 0) {
       return NextResponse.json(
         {
-          message:
-            'Booking status not updated. It might have been changed concurrently or an issue occurred.',
+          message: `Booking ${newStatus} successfully.`,
+          booking: updatedBooking, // Return the updated booking for confirmation
         },
-        { status: 409 }
+        { status: 200 }
+      );
+    } else {
+      // action === 'cancel'
+      // Allow cancellation (deletion) for 'pending_confirmation' or 'confirmed'
+      if (
+        bookingToUpdateOrDelete.status !== 'pending_confirmation' &&
+        bookingToUpdateOrDelete.status !== 'confirmed'
+      ) {
+        // If already cancelled or in another state not allowing cancellation,
+        // you might want to return an error or just state it cannot be deleted.
+        // For simplicity, if it's already 'cancelled', deleting it is fine.
+        // If it's in a state that shouldn't be deleted, this check is important.
+        if (bookingToUpdateOrDelete.status === 'cancelled') {
+          // If you want to prevent deleting already "logically" cancelled bookings:
+          // return NextResponse.json(
+          //   { message: 'Booking was already cancelled and will now be deleted.' },
+          //   { status: 200 } // Or 409 if you want to prevent re-action
+          // );
+        } else {
+          return NextResponse.json(
+            {
+              message: `Cannot delete booking with status: ${bookingToUpdateOrDelete.status}. Only pending or confirmed bookings can be deleted.`,
+            },
+            { status: 409 }
+          );
+        }
+      }
+
+      const deleteResult = await bookingsColl.deleteOne({ _id: objectId });
+
+      if (deleteResult.deletedCount === 0) {
+        return NextResponse.json(
+          {
+            message:
+              'Booking not deleted. It might have been deleted concurrently or an issue occurred.',
+          },
+          { status: 404 } // Or 409 if you prefer
+        );
+      }
+
+      return NextResponse.json(
+        {
+          message: `Booking cancelled and deleted successfully.`,
+          // No booking object to return as it's deleted
+        },
+        { status: 200 } // 200 OK or 204 No Content are both suitable
       );
     }
-
-    const updatedBooking = await bookingsColl.findOne({
-      _id: objectId, // Use ObjectId instance here
-    });
-
-    return NextResponse.json(
-      {
-        message: `Booking ${newStatus} successfully.`,
-        booking: updatedBooking,
-      },
-      { status: 200 }
-    );
   } catch (error) {
-    console.error('Update Booking Status API Error:', error);
+    console.error('Update/Delete Booking API Error:', error);
     const errorMessage =
       error instanceof Error ? error.message : 'An unknown error occurred';
     return NextResponse.json(
-      { message: 'Failed to update booking status', error: errorMessage },
+      { message: 'Failed to process booking request', error: errorMessage },
       { status: 500 }
     );
   }

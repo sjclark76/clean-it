@@ -290,30 +290,48 @@ export default function AdminAvailabilityPage() {
         body: JSON.stringify({ action }),
       });
 
-      const result = await response.json();
+      const result = await response.json(); // Contains message, and 'booking' object only for confirm
 
-      if (response.ok && result.booking) {
-        const updatedBookingFromServer = result.booking as Booking; // Cast to Booking type
-
-        setUpcomingBookings((prevBookings) => {
-          // If the booking was cancelled, filter it out of the list
-          if (updatedBookingFromServer.status === 'cancelled') {
-            return prevBookings.filter((b) => b._id?.toString() !== bookingId);
-          }
-          // Otherwise, update the existing booking in the list
-          return prevBookings.map((b) =>
-            b._id?.toString() === bookingId ? updatedBookingFromServer : b
+      if (response.ok) {
+        if (action === 'cancel') {
+          // For successful cancellation, filter out the booking
+          setUpcomingBookings((prevBookings) =>
+            prevBookings.filter((b) => b._id?.toString() !== bookingId)
           );
-        });
-        // Optionally, you might want to refresh the general availability list
-        // if cancellations affect how you display those slots.
+          setEditMessage(result.message || 'Booking cancelled successfully.');
+          setEditMessageType('success');
+        } else if (action === 'confirm' && result.booking) {
+          // For successful confirmation, update the booking
+          const updatedBookingFromServer = result.booking as Booking;
+          setUpcomingBookings((prevBookings) =>
+            prevBookings.map((b) =>
+              b._id?.toString() === bookingId ? updatedBookingFromServer : b
+            )
+          );
+          setEditMessage(result.message || 'Booking confirmed successfully.');
+          setEditMessageType('success');
+        } else if (action === 'confirm' && !result.booking) {
+          // Handle case where confirmation was ok but booking data wasn't returned
+          setEditMessage(
+            result.message ||
+              'Confirmation processed, but booking data was not returned.'
+          );
+          setEditMessageType('error');
+          console.error(
+            'Confirmation successful but no booking data in response:',
+            result
+          );
+        }
+        // Optionally, refresh general availability if needed
         // fetchUpcomingAvailability();
       } else {
+        // API returned an error (e.g., 404, 409, 500)
         setEditMessage(result.message || `Failed to ${action} booking.`);
         setEditMessageType('error');
         console.error(`Failed to ${action} booking:`, result.message);
       }
     } catch (error) {
+      // Network error or other unexpected issues
       console.error(`Error ${action}ing booking:`, error);
       setEditMessage(
         `An unexpected error occurred while ${action}ing the booking.`

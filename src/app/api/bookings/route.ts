@@ -1,28 +1,13 @@
 // src/app/api/bookings/route.ts
 import { NextResponse, NextRequest } from 'next/server';
-import { MongoClient, ServerApiVersion } from 'mongodb';
 import { Booking, DayAvailability } from '@/types';
 import { minutesToTime, timeToMinutes } from '@/shared/timeFunctions';
+import { getDb } from '@/lib/mongodb'; // Import the shared utility
 
-const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const dbName = process.env.MONGODB_DB_NAME || 'jessiahs_car_cleaning';
 const bookingsCollectionName = 'bookings';
 const availabilitiesCollectionName = 'availabilities';
 
-async function getConnectedClient() {
-  const client = new MongoClient(uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
-  });
-  await client.connect();
-  return client;
-}
-
 export async function POST(request: NextRequest) {
-  let mongoClient: MongoClient | null = null;
   try {
     const bookingData = await request.json();
 
@@ -40,8 +25,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    mongoClient = await getConnectedClient();
-    const db = mongoClient.db(dbName);
+    const db = await getDb(); // Use the shared function
     const bookingsColl = db.collection<Booking>(bookingsCollectionName);
     const availabilitiesColl = db.collection<DayAvailability>(
       availabilitiesCollectionName
@@ -79,7 +63,6 @@ export async function POST(request: NextRequest) {
     }
 
     const requiredSlotsForBlock: string[] = [];
-    // Check all half-hour slots covered by service + buffer (2.5 hours = 5 slots)
     for (let i = 0; i < 5; i++) {
       requiredSlotsForBlock.push(
         minutesToTime(serviceStartTimeMinutes + i * 30)
@@ -118,11 +101,9 @@ export async function POST(request: NextRequest) {
       const existingBookingStartMinutes = timeToMinutes(
         existingBooking.startTime
       );
-      // Assuming existingBooking.endTime is service end, add buffer for full block
       const existingBookingBlockEndMinutes =
         timeToMinutes(existingBooking.endTime) + 30;
 
-      // Check for overlap: (StartA < EndB) AND (EndA > StartB)
       if (
         newBookingBlockStartMinutes < existingBookingBlockEndMinutes &&
         newBookingBlockEndMinutes > existingBookingStartMinutes
@@ -137,14 +118,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 3. Insert the booking
     const bookingResult = await bookingsColl.insertOne(
       newBookingDraft as Booking
     );
-
-    // 4. IMPORTANT: DO NOT update the admin's general availability (availabilities collection) here.
-    // The `availabilities` collection should only reflect what the admin sets as their general working hours.
-    // The fact that a slot is "booked" is determined by querying the `bookings` collection.
 
     return NextResponse.json(
       {
@@ -162,19 +138,13 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    if (mongoClient) {
-      await mongoClient.close();
-    }
   }
+  // No finally block needed here to close client, as it's managed by the utility
 }
 
-// GET handler remains the same
 export async function GET() {
-  let mongoClient: MongoClient | null = null;
   try {
-    mongoClient = await getConnectedClient();
-    const db = mongoClient.db(dbName);
+    const db = await getDb(); // Use the shared function
     const bookingsColl = db.collection<Booking>(bookingsCollectionName);
 
     const todayStr = new Date().toISOString().split('T')[0];
@@ -184,7 +154,7 @@ export async function GET() {
         date: { $gte: todayStr },
         status: { $ne: 'cancelled' },
       })
-      .sort({ date: 1, startTime: 1 }) // Sorting by string startTime "HH:MM AM/PM" needs custom logic if not purely lexicographical
+      .sort({ date: 1, startTime: 1 })
       .toArray();
 
     return NextResponse.json(upcomingBookings);
@@ -197,9 +167,5 @@ export async function GET() {
       },
       { status: 500 }
     );
-  } finally {
-    if (mongoClient) {
-      await mongoClient.close();
-    }
   }
 }

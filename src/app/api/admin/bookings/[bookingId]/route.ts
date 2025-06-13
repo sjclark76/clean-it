@@ -1,23 +1,10 @@
 // src/app/api/admin/bookings/[bookingId]/route.ts
 import { NextResponse } from 'next/server';
-import { MongoClient, ServerApiVersion, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Booking } from '@/types';
+import { getDb } from '@/lib/mongodb'; // Import the shared utility
 
-const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const dbName = process.env.MONGODB_DB_NAME || 'jessiahs_car_cleaning';
 const bookingsCollectionName = 'bookings';
-
-async function getConnectedClient() {
-  const client = new MongoClient(uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
-  });
-  await client.connect();
-  return client;
-}
 
 interface PatchRequestBody {
   action: 'confirm' | 'cancel';
@@ -27,7 +14,6 @@ export async function PATCH(
   request: Request,
   { params }: { params: { bookingId: string } }
 ) {
-  let mongoClient: MongoClient | null = null;
   const { bookingId } = params;
 
   if (!ObjectId.isValid(bookingId)) {
@@ -48,8 +34,7 @@ export async function PATCH(
       );
     }
 
-    mongoClient = await getConnectedClient();
-    const db = mongoClient.db(dbName);
+    const db = await getDb(); // Use the shared function
     const bookingsColl = db.collection<Booking>(bookingsCollectionName);
 
     const bookingObjectId = new ObjectId(bookingId);
@@ -85,7 +70,6 @@ export async function PATCH(
     );
 
     if (updateResult.modifiedCount === 0) {
-      // This might happen if status was already changed by another process, or no match
       return NextResponse.json(
         {
           message:
@@ -94,13 +78,6 @@ export async function PATCH(
         { status: 409 }
       );
     }
-
-    // Optional: If cancelling, you might want to update general availability.
-    // This is complex as it depends on how your general availability slots are structured
-    // and whether they directly reflect bookings. For now, we'll skip this.
-    // if (newStatus === 'cancelled') {
-    //   // Logic to make the time slots available again in the 'availability' collection
-    // }
 
     const updatedBooking = await bookingsColl.findOne({ _id: bookingObjectId });
 
@@ -119,9 +96,6 @@ export async function PATCH(
       { message: 'Failed to update booking status', error: errorMessage },
       { status: 500 }
     );
-  } finally {
-    if (mongoClient) {
-      await mongoClient.close();
-    }
   }
+  // No finally block needed here to close client, as it's managed by the utility
 }

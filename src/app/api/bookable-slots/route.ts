@@ -1,25 +1,11 @@
 // src/app/api/bookable-slots/route.ts
 import { NextResponse, NextRequest } from 'next/server';
-import { MongoClient, ServerApiVersion } from 'mongodb';
 import { DayAvailability, Booking } from '@/types';
 import { minutesToTime, timeToMinutes } from '@/shared/timeFunctions';
+import { getDb } from '@/lib/mongodb'; // Import the shared utility
 
-const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const dbName = process.env.MONGODB_DB_NAME || 'jessiahs_car_cleaning';
 const bookingsCollectionName = 'bookings';
 const availabilitiesCollectionName = 'availabilities';
-
-async function getConnectedClient() {
-  const client = new MongoClient(uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
-  });
-  await client.connect();
-  return client;
-}
 
 interface BookableSlotResponseItem {
   startTime: string;
@@ -37,14 +23,14 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  let mongoClient: MongoClient | null = null;
   try {
-    mongoClient = await getConnectedClient();
-    const db = mongoClient.db(dbName);
+    const db = await getDb(); // Use the shared function
     const availabilitiesColl = db.collection<DayAvailability>(
       availabilitiesCollectionName
     );
     const bookingsColl = db.collection<Booking>(bookingsCollectionName);
+
+    // ... (rest of your logic remains the same) ...
 
     const dayAvailability = await availabilitiesColl.findOne({ date });
 
@@ -53,7 +39,7 @@ export async function GET(request: NextRequest) {
       !dayAvailability.slots ||
       dayAvailability.slots.length === 0
     ) {
-      return NextResponse.json([]); // No admin availability set or no slots for this day
+      return NextResponse.json([]);
     }
 
     const existingBookingsForDay = await bookingsColl
@@ -67,7 +53,7 @@ export async function GET(request: NextRequest) {
     const sortedAdminSlots = [...dayAvailability.slots].sort(
       (a, b) => timeToMinutes(a.time) - timeToMinutes(b.time)
     );
-    const requiredConsecutiveSlots = 5; // 2hr service (4 slots) + 0.5hr buffer (1 slot)
+    const requiredConsecutiveSlots = 5;
 
     for (
       let i = 0;
@@ -85,22 +71,20 @@ export async function GET(request: NextRequest) {
       if (isAdminSlotBlockAvailable) {
         const potentialStartTimeStr = sortedAdminSlots[i].time;
         const potentialStartTimeMinutes = timeToMinutes(potentialStartTimeStr);
-        const serviceEndTimeMinutes = potentialStartTimeMinutes + 120; // 2 hours
-        const bufferEndTimeMinutes = serviceEndTimeMinutes + 30; // Full block including buffer
+        const serviceEndTimeMinutes = potentialStartTimeMinutes + 120;
+        const bufferEndTimeMinutes = serviceEndTimeMinutes + 30;
 
         let isConflicting = false;
         for (const existingBooking of existingBookingsForDay) {
           const existingBookingStartMinutes = timeToMinutes(
             existingBooking.startTime
           );
-          // Assuming existingBooking.endTime is service end, add buffer for full block
           const existingBookingServiceEndMinutes = timeToMinutes(
             existingBooking.endTime
           );
           const existingBookingBufferEndMinutes =
             existingBookingServiceEndMinutes + 30;
 
-          // Check for overlap: (StartA < EndB) AND (EndA > StartB)
           if (
             potentialStartTimeMinutes < existingBookingBufferEndMinutes &&
             bufferEndTimeMinutes > existingBookingStartMinutes
@@ -129,9 +113,5 @@ export async function GET(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    if (mongoClient) {
-      await mongoClient.close();
-    }
   }
 }

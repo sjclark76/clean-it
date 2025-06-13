@@ -6,7 +6,6 @@ import { Booking } from '@/types';
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const dbName = process.env.MONGODB_DB_NAME || 'jessiahs_car_cleaning';
 const bookingsCollectionName = 'bookings';
-const availabilityCollectionName = 'availability'; // For potential future use
 
 async function getConnectedClient() {
   const client = new MongoClient(uri, {

@@ -21,7 +21,6 @@ export default function BookingCard({
   onCancelBooking,
   isUpdatingBooking,
 }: BookingCardProps) {
-  const { formatTimeDisplay } = useBookingDisplay();
   const bookingIdStr = booking._id.toString();
 
   console.log({ booking });

@@ -10,7 +10,7 @@ interface TimeSlot {
 }
 
 interface DayAvailability {
-  _id?: any;
+  _id?: string;
   date: string;
   dayName: string;
   slots: TimeSlot[];

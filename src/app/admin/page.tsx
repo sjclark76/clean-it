@@ -202,7 +202,7 @@ export default function AdminAvailabilityPage() {
         setEditMessage(result.message || 'Failed to save availability.');
         setEditMessageType('error');
       }
-    } catch (error) {
+    } catch {
       setEditMessage('An unexpected error occurred. Please try again.');
       setEditMessageType('error');
     } finally {
@@ -261,10 +261,10 @@ export default function AdminAvailabilityPage() {
   };
 
   const handleUpdateBookingStatus = async (
-    bookingId: string,
+    bookingId: string | undefined,
     action: 'confirm' | 'cancel'
   ) => {
-    setIsUpdatingBooking(bookingId);
+    setIsUpdatingBooking(bookingId ?? '');
     setEditMessage(null); // Clear general edit messages
     setEditMessageType(null);
 
@@ -280,7 +280,7 @@ export default function AdminAvailabilityPage() {
       if (response.ok && result.booking) {
         setUpcomingBookings((prevBookings) =>
           prevBookings.map((b) =>
-            b._id.toString() === bookingId ? result.booking : b
+            b._id?.toString() === bookingId ? result.booking : b
           )
         );
         // Set a success message specific to this action if desired, or rely on UI change
@@ -303,11 +303,11 @@ export default function AdminAvailabilityPage() {
       setIsUpdatingBooking(null);
     }
   };
-  const handleConfirmBooking = async (bookingId: string) => {
+  const handleConfirmBooking = async (bookingId: string | undefined) => {
     await handleUpdateBookingStatus(bookingId, 'confirm');
   };
 
-  const handleCancelBooking = async (bookingId: string) => {
+  const handleCancelBooking = async (bookingId: string | undefined) => {
     await handleUpdateBookingStatus(bookingId, 'cancel');
   };
 
@@ -357,7 +357,7 @@ export default function AdminAvailabilityPage() {
 
       <footer className='bg-gray-200 text-center py-6 mt-auto'>
         <p className='text-gray-600'>
-          &copy; {new Date().getFullYear()} Jessiah's Car Cleaning - Admin
+          &copy; {new Date().getFullYear()} Jessiah`&apos;s Car Cleaning - Admin
         </p>
       </footer>
     </div>

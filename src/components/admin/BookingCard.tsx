@@ -2,14 +2,13 @@
 'use client';
 
 import { Booking } from '@/types';
-import { useBookingDisplay } from '@/hooks/useBookingDisplay'; // Adjust path if needed
 
 interface BookingCardProps {
   booking: Booking;
   formatDateDisplay: (isoDateString: string) => string;
   formatBookingStatus: (status: Booking['status']) => string;
-  onConfirmBooking: (bookingId: string) => Promise<void>;
-  onCancelBooking: (bookingId: string) => Promise<void>;
+  onConfirmBooking: (bookingId: string | undefined) => Promise<void>;
+  onCancelBooking: (bookingId: string | undefined) => Promise<void>;
   isUpdatingBooking: string | null;
 }
 
@@ -21,7 +20,7 @@ export default function BookingCard({
   onCancelBooking,
   isUpdatingBooking,
 }: BookingCardProps) {
-  const bookingIdStr = booking._id.toString();
+  const bookingIdStr = booking._id?.toString();
 
   console.log({ booking });
   return (

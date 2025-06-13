@@ -1,10 +1,12 @@
 // Helper to parse time string "HH:MM AM/PM" to minutes from midnight
 const timeToMinutes = (timeStr: string): number => {
   const [time, modifier] = timeStr.split(' ');
-  let [hours, minutes] = time.split(':').map(Number);
-  if (modifier.toUpperCase() === 'PM' && hours !== 12) hours += 12;
-  if (modifier.toUpperCase() === 'AM' && hours === 12) hours = 0;
-  return hours * 60 + minutes;
+  const [hours, minutes] = time.split(':').map(Number);
+
+  let tempHours = hours;
+  if (modifier.toUpperCase() === 'PM' && hours !== 12) tempHours += 12;
+  if (modifier.toUpperCase() === 'AM' && hours === 12) tempHours = 0;
+  return tempHours * 60 + minutes;
 };
 
 // Helper to format minutes from midnight back to "HH:MM AM/PM"

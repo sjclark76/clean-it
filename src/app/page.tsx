@@ -93,7 +93,7 @@ export default function HomePage() {
             className='text-2xl font-bold text-purple-600 hover:text-purple-500 transition-colors duration-300 flex items-center'
           >
             <SparkleIcon className='w-7 h-7 mr-2' />
-            Jessiah's Car Spa
+            Jessiah`&apos;s Car Spa
           </a>
           <div className='space-x-2 sm:space-x-4'>
             {/*<a*/}
@@ -127,12 +127,12 @@ export default function HomePage() {
           <div className='container mx-auto px-4 sm:px-6 relative z-10'>
             <CarWashIcon className='w-16 h-16 text-purple-500 mx-auto mb-6' />
             <h1 className='text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 tracking-tight text-gray-900'>
-              <span className='block'>Jessiah's Premium</span>
+              <span className='block'>Jessiah`&apos;s Premium</span>
               <span className='block text-purple-600'>Car Care Services</span>
             </h1>
             <p className='text-lg sm:text-xl md:text-2xl text-gray-700 mb-10 max-w-2xl mx-auto'>
-              Experience the ultimate clean. We meticulously restore your car's
-              shine, inside and out!
+              Experience the ultimate clean. We meticulously restore your
+              car`&apos;s shine, inside and out!
             </p>
             <a
               href='/booking' // Updated to link to booking page
@@ -212,16 +212,16 @@ export default function HomePage() {
                 About The Business
               </h2>
               <p className='text-gray-700 text-lg mb-6 leading-relaxed'>
-                Hi, I'm Jessiah, a dedicated 13-year-old entrepreneur providing
-                quality interior car cleaning services. I started this business
-                with a clear goal in mind – saving for a new downhill mountain
-                bike to compete in the upcoming NZ Nationals. Every job I
-                complete brings me closer to achieving this dream while
+                Hi, I`&apos;m Jessiah, a dedicated 13-year-old entrepreneur
+                providing quality interior car cleaning services. I started this
+                business with a clear goal in mind – saving for a new downhill
+                mountain bike to compete in the upcoming NZ Nationals. Every job
+                I complete brings me closer to achieving this dream while
                 providing excellent service to my community.
               </p>
 
               <h3 className='text-2xl font-semibold mb-4 text-purple-500'>
-                Why Choose Jessiah's Service?
+                Why Choose Jessiah`&apos;s Service?
               </h3>
               <ul className='space-y-4 text-gray-700 text-lg'>
                 <li className='flex items-start'>
@@ -242,16 +242,16 @@ export default function HomePage() {
                     <span className='font-semibold'>Attention to detail</span> –
                     As a young athlete, I understand the importance of
                     preparation and precision. I bring this same mindset to
-                    cleaning your vehicle's interior.
+                    cleaning your vehicle`&apos;s interior.
                   </div>
                 </li>
                 <li className='flex items-start'>
                   <SparkleIcon className='w-7 h-7 text-green-500 mr-3 mt-1 flex-shrink-0' />
                   <div>
                     <span className='font-semibold'>Community support</span> –
-                    When you hire me, you're supporting a local young person
-                    working toward their goals while receiving professional
-                    service.
+                    When you hire me, you`&apos;re supporting a local young
+                    person working toward their goals while receiving
+                    professional service.
                   </div>
                 </li>
               </ul>
@@ -287,8 +287,8 @@ export default function HomePage() {
       <footer className='bg-gray-200 text-center py-10'>
         <div className='container mx-auto px-4 sm:px-6'>
           <p className='text-gray-600 mb-2'>
-            &copy; {new Date().getFullYear()} Jessiah's Car Spa. All Rights
-            Reserved.
+            &copy; {new Date().getFullYear()} Jessiah`&apos;s Car Spa. All
+            Rights Reserved.
           </p>
           <p className='text-gray-500 text-sm'>
             Proudly serving the Hawea community.

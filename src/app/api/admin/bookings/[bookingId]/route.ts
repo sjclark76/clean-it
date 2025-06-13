@@ -12,9 +12,9 @@ interface PatchRequestBody {
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { bookingId: string } }
+  { params }: { params: Promise<{ bookingId: string }> }
 ) {
-  const { bookingId } = params;
+  const { bookingId } = await params;
 
   if (!ObjectId.isValid(bookingId)) {
     return NextResponse.json(
@@ -37,9 +37,8 @@ export async function PATCH(
     const db = await getDb(); // Use the shared function
     const bookingsColl = db.collection<Booking>(bookingsCollectionName);
 
-    const bookingObjectId = new ObjectId(bookingId);
     const bookingToUpdate = await bookingsColl.findOne({
-      _id: bookingObjectId,
+      _id: bookingId,
     });
 
     if (!bookingToUpdate) {
@@ -65,7 +64,7 @@ export async function PATCH(
     }
 
     const updateResult = await bookingsColl.updateOne(
-      { _id: bookingObjectId },
+      { _id: bookingId },
       { $set: { status: newStatus } }
     );
 
@@ -79,7 +78,7 @@ export async function PATCH(
       );
     }
 
-    const updatedBooking = await bookingsColl.findOne({ _id: bookingObjectId });
+    const updatedBooking = await bookingsColl.findOne({ _id: bookingId });
 
     return NextResponse.json(
       {

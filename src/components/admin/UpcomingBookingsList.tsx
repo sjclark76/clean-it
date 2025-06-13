@@ -10,8 +10,8 @@ interface UpcomingBookingsListProps {
   error: string | null;
   formatDateDisplay: (isoDateString: string) => string;
   formatBookingStatus: (status: Booking['status']) => string;
-  onConfirmBooking: (bookingId: string) => Promise<void>;
-  onCancelBooking: (bookingId: string) => Promise<void>;
+  onConfirmBooking: (bookingId: string | undefined) => Promise<void>;
+  onCancelBooking: (bookingId: string | undefined) => Promise<void>;
   isUpdatingBooking: string | null;
 }
 
@@ -39,7 +39,7 @@ export default function UpcomingBookingsList({
         <div className='space-y-4 max-h-[calc(100vh-12rem)] overflow-y-auto pr-2'>
           {bookings.map((booking) => (
             <BookingCard
-              key={booking._id.toString()}
+              key={booking._id}
               booking={booking}
               formatDateDisplay={formatDateDisplay}
               formatBookingStatus={formatBookingStatus}

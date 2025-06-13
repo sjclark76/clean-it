@@ -2,16 +2,18 @@
 'use client';
 
 import React from 'react';
+// Import StyledDropdown if you decide to use it directly here,
+// otherwise, the parent component will render it.
+// For this example, we'll assume the parent handles the StyledDropdown.
 
 interface FormFieldProps {
   id: string;
   name: string;
   label: string;
-  type?: 'text' | 'tel' | 'email' | 'select' | 'textarea';
+  type?: 'text' | 'tel' | 'email' | 'textarea'; // Removed 'select'
   required?: boolean;
-  placeholder?: string; // Used for textarea/select, label acts as placeholder for floating inputs
-  options?: string[]; // For select type
-  rows?: number; // For textarea type
+  placeholder?: string;
+  rows?: number;
 }
 
 export default function FormField({
@@ -21,15 +23,12 @@ export default function FormField({
   type = 'text',
   required = false,
   placeholder,
-  options,
   rows,
 }: FormFieldProps) {
-  const commonInputClasses =
-    'w-full bg-gray-50 border-gray-300 text-gray-900 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500';
+  const baseInputStyles =
+    'w-full bg-gray-50 border-gray-300 text-gray-900 rounded-md focus:ring-purple-500 focus:border-purple-500';
 
-  // Specific classes for inputs that will have floating labels
-  const floatingLabelEnabledInputClasses =
-    'block px-3 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-gray-50 rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 peer';
+  const floatingLabelEnabledInputClasses = `${baseInputStyles} block px-3 pb-2.5 pt-5 text-sm appearance-none focus:outline-none focus:ring-1 peer`;
 
   if (type === 'text' || type === 'tel' || type === 'email') {
     return (
@@ -40,8 +39,6 @@ export default function FormField({
           id={id}
           required={required}
           className={floatingLabelEnabledInputClasses}
-          // A non-empty placeholder is needed for :placeholder-shown to work correctly.
-          // The label itself will act as the visual placeholder.
           placeholder=' '
         />
         <label
@@ -60,52 +57,30 @@ export default function FormField({
     );
   }
 
-  // Fallback for other input types (select, textarea)
-  return (
-    <div>
-      <label
-        htmlFor={id}
-        className='block text-sm font-medium text-gray-700 mb-1'
-      >
-        {label}
-      </label>
-      {type === 'textarea' ? (
+  // Handle textarea
+  if (type === 'textarea') {
+    return (
+      <div>
+        <label
+          htmlFor={id}
+          className='block text-sm font-medium text-gray-700 mb-1'
+        >
+          {label}
+        </label>
         <textarea
           id={id}
           name={name}
           rows={rows || 3}
           required={required}
-          className={commonInputClasses}
+          className={`${baseInputStyles} p-3`}
           placeholder={placeholder}
         />
-      ) : type === 'select' ? (
-        <select
-          id={id}
-          name={name}
-          required={required}
-          className={commonInputClasses}
-          defaultValue=''
-        >
-          <option value='' disabled>
-            {placeholder || `Select ${label.toLowerCase()}`}
-          </option>
-          {options?.map((optionValue) => (
-            <option key={optionValue} value={optionValue}>
-              {optionValue}
-            </option>
-          ))}
-        </select>
-      ) : (
-        // This case would handle any other future input types not explicitly covered.
-        <input
-          type={type}
-          name={name}
-          id={id}
-          required={required}
-          className={commonInputClasses}
-          placeholder={placeholder}
-        />
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  // Fallback for any other types (or if 'select' was passed by mistake)
+  // Or you could throw an error for unsupported types.
+  console.warn(`FormField: Unsupported type "${type}" provided for ${name}.`);
+  return null;
 }

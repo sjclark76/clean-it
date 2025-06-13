@@ -267,7 +267,7 @@ export default function HomePage() {
               Reserved.
             </p>
             <p className="text-gray-500 text-sm">
-              Proudly serving the [Your Town/Area] community.
+              Proudly serving the Hawea community.
             </p>
           </div>
         </footer>

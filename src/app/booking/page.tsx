@@ -19,6 +19,7 @@ export default function BookingPage() {
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        const form = event.currentTarget; // Store the form reference here
         setIsLoading(true);
         setFormMessage(null);
 
@@ -28,7 +29,7 @@ export default function BookingPage() {
             return;
         }
 
-        const formData = new FormData(event.currentTarget);
+        const formData = new FormData(form); // Use the stored reference
         const bookingPayload = {
             date: selectedBookingSlot.date,
             startTime: selectedBookingSlot.time,
@@ -40,7 +41,9 @@ export default function BookingPage() {
         };
 
         try {
-            const response = await fetch('/api/booking', { // Targeting the bookings API
+            // In a previous response, this was corrected to '/api/bookings'.
+            // Ensure it matches your actual API endpoint.
+            const response = await fetch('/api/bookings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(bookingPayload),
@@ -50,7 +53,7 @@ export default function BookingPage() {
 
             if (response.ok) {
                 setFormMessage({ type: 'success', text: result.message || "Booking request successful! Jessiah will contact you to confirm." });
-                event.currentTarget.reset();
+                form.reset(); // Use the stored form reference to reset
                 setSelectedBookingSlot(null);
                 // Optionally, you might want to trigger a refresh of the AvailabilitySelector
                 // if it needs to update its slots immediately after a booking.

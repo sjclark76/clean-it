@@ -96,7 +96,7 @@ export default function AdminAvailabilityPage() {
         setIsLoadingBookings(true);
         setBookingsError(null);
         try {
-            const response = await fetch('/api/booking'); // Use the new endpoint
+            const response = await fetch('/api/bookings'); // Use the new endpoint
             if (!response.ok) {
                 throw new Error('Failed to fetch upcoming bookings');
             }

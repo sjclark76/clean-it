@@ -27,41 +27,6 @@ const collectionName = "availabilities";
 // to avoid issues with multiple invocations in serverless environments.
 // For simplicity here, we'll keep it outside but manage connection per request.
 
-// --- Mock Data for Seeding (if needed) ---
-const MOCK_AVAILABILITY_DATA_TO_SEED: DayAvailability[] = [
-    {
-        date: "2023-11-15",
-        dayName: "Wednesday",
-        slots: [
-            { id: "1", time: "09:00 AM", available: true },
-            { id: "2", time: "10:00 AM", available: false },
-            { id: "3", time: "11:00 AM", available: true },
-            { id: "4", time: "01:00 PM", available: true },
-            { id: "5", time: "02:00 PM", available: false },
-        ],
-    },
-    {
-        date: "2023-11-16",
-        dayName: "Thursday",
-        slots: [
-            { id: "6", time: "09:30 AM", available: true },
-            { id: "7", time: "10:30 AM", available: true },
-            { id: "8", time: "11:30 AM", available: false },
-        ],
-    },
-    {
-        date: "2023-11-17",
-        dayName: "Friday",
-        slots: [
-            { id: "9", time: "10:00 AM", available: true },
-            { id: "10", time: "11:00 AM", available: true },
-            { id: "11", time: "12:00 PM", available: true },
-            { id: "12", time: "02:00 PM", available: true },
-        ],
-    },
-];
-// --- End Mock Data for Seeding ---
-
 async function getConnectedClient() {
     const client = new MongoClient(uri, {
         serverApi: {
@@ -82,13 +47,6 @@ export async function GET() {
 
         const db = client.db(dbName);
         const availabilitiesCollection = db.collection<DayAvailability>(collectionName);
-
-        const count = await availabilitiesCollection.countDocuments();
-        if (count === 0 && MOCK_AVAILABILITY_DATA_TO_SEED.length > 0) {
-            console.log(`GET: Collection '${collectionName}' is empty. Seeding with mock data...`);
-            await availabilitiesCollection.insertMany(MOCK_AVAILABILITY_DATA_TO_SEED);
-            console.log("GET: Mock data seeded successfully.");
-        }
 
         const availabilities = await availabilitiesCollection.find({}).sort({ date: 1 }).toArray(); // Added sort
 

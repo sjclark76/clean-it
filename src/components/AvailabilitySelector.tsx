@@ -2,14 +2,11 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-// minutesToTime and timeToMinutes are no longer needed here as logic moved to backend
-import { DayAvailability } from '@/types'; // Keep DayAvailability for admin dates
+import { DayAvailability } from '@/types';
 
-// This interface now matches the API response for bookable slots
 interface BookableSlot {
-  // date is implicit from the selectedDate state
-  startTime: string; // e.g., "09:00 AM" - this is what the user picks
-  displayTime: string; // e.g., "09:00 AM - 11:00 AM"
+  startTime: string;
+  displayTime: string;
 }
 
 interface AvailabilitySelectorProps {
@@ -19,8 +16,7 @@ interface AvailabilitySelectorProps {
 export default function AvailabilitySelector({
   onSlotSelect,
 }: AvailabilitySelectorProps) {
-  // adminAvailability is now only for populating the date dropdown
-  const [adminDates, setAdminDates] = useState<DayAvailability[]>([]);
+  const [adminDates, setAdminDates] = useState<DayAvailability[]>([]); // Will hold dates that have bookable slots
   const [bookableSlotsForSelectedDate, setBookableSlotsForSelectedDate] =
     useState<BookableSlot[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -28,34 +24,25 @@ export default function AvailabilitySelector({
     string | null
   >(null);
   const [isLoadingDates, setIsLoadingDates] = useState<boolean>(true);
-  const [isLoadingSlots, setIsLoadingSlots] = useState<boolean>(false); // Separate loading for slots
+  const [isLoadingSlots, setIsLoadingSlots] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch admin-set available dates to populate the dropdown
   useEffect(() => {
-    const fetchAdminAvailableDates = async () => {
+    const fetchBookableAdminDates = async () => {
       setIsLoadingDates(true);
       setError(null);
       try {
-        const response = await fetch('/api/availability'); // Fetches all admin availability
+        // Call the new endpoint
+        const response = await fetch('/api/bookable-dates-list');
         if (!response.ok)
-          throw new Error('Failed to fetch admin available dates');
+          throw new Error('Failed to fetch bookable admin dates');
         const data: DayAvailability[] = await response.json();
-        // Filter out dates that have no available slots at all, if desired, or do it on backend
-        const datesWithSomeAvailability = data.filter((day) =>
-          day.slots.some((s) => s.available)
-        );
-        setAdminDates(datesWithSomeAvailability);
+        setAdminDates(data);
 
-        // Optionally, pre-select the first available date
-        if (datesWithSomeAvailability.length > 0) {
-          // To pre-select and fetch slots, you'd call fetchBookableSlotsForDate here
-          // For simplicity, we'll let the user pick a date first.
-          // Or, if you want to auto-select the first date and load its slots:
-          // const firstDate = datesWithSomeAvailability[0].date;
-          // setSelectedDate(firstDate);
-          // fetchBookableSlotsForDate(firstDate); // You'd need to define this function
-        }
+        // Optionally, auto-select the first date if available
+        // if (data.length > 0) {
+        //   setSelectedDate(data[0].date);
+        // }
       } catch (err) {
         setError(
           err instanceof Error ? err.message : 'Unknown error fetching dates'
@@ -64,16 +51,15 @@ export default function AvailabilitySelector({
         setIsLoadingDates(false);
       }
     };
-    fetchAdminAvailableDates();
+    fetchBookableAdminDates();
   }, []);
 
-  // Fetch bookable slots when a date is selected
   const fetchBookableSlotsForDate = useCallback(async (date: string) => {
     if (!date) return;
     setIsLoadingSlots(true);
-    setBookableSlotsForSelectedDate([]); // Clear previous slots
-    setSelectedBookableSlotTime(null); // Reset selection
-    setError(null);
+    setBookableSlotsForSelectedDate([]);
+    setSelectedBookableSlotTime(null);
+    setError(null); // Clear general error when fetching slots for a specific date
     try {
       const response = await fetch(`/api/bookable-slots?date=${date}`);
       if (!response.ok)
@@ -93,7 +79,7 @@ export default function AvailabilitySelector({
     if (selectedDate) {
       fetchBookableSlotsForDate(selectedDate);
     } else {
-      setBookableSlotsForSelectedDate([]); // Clear slots if no date is selected
+      setBookableSlotsForSelectedDate([]);
     }
   }, [selectedDate, fetchBookableSlotsForDate]);
 
@@ -103,17 +89,15 @@ export default function AvailabilitySelector({
 
   const handleTimeSlotClick = (slot: BookableSlot) => {
     if (selectedDate) {
-      // Ensure selectedDate is not null
       setSelectedBookableSlotTime(slot.startTime);
       onSlotSelect(selectedDate, slot.startTime);
     } else {
       console.error('Date not selected, cannot select time slot.');
-      // Optionally, set an error message for the user
     }
   };
 
   const formatDateDisplay = (dateString: string) => {
-    const dateObj = new Date(dateString + 'T00:00:00'); // Treat as local
+    const dateObj = new Date(dateString + 'T00:00:00');
     return dateObj.toLocaleDateString(undefined, {
       weekday: 'long',
       year: 'numeric',
@@ -130,15 +114,15 @@ export default function AvailabilitySelector({
     );
   }
 
-  if (error && !isLoadingSlots) {
-    // Show general error if not specifically loading slots
+  // Show general error if it occurred during date loading and we are not currently loading slots
+  if (error && !isLoadingSlots && !selectedDate) {
     return <div className='p-4 text-center text-red-600'>Error: {error}</div>;
   }
 
   if (adminDates.length === 0 && !isLoadingDates) {
     return (
       <div className='p-4 text-center text-gray-600'>
-        No dates with general availability found.
+        No dates with available booking slots found at this time.
       </div>
     );
   }
@@ -184,12 +168,12 @@ export default function AvailabilitySelector({
         </div>
       )}
 
-      {error &&
-        isLoadingSlots && ( // Show error specific to slot loading
-          <div className='p-4 text-center text-red-600'>
-            Error loading slots: {error}
-          </div>
-        )}
+      {/* Display error related to slot fetching only when slots are being loaded or have failed for a selected date */}
+      {selectedDate && error && !isLoadingSlots && (
+        <div className='p-4 text-center text-red-600'>
+          Error loading slots: {error}
+        </div>
+      )}
 
       {!isLoadingSlots &&
         selectedDate &&
@@ -201,7 +185,7 @@ export default function AvailabilitySelector({
             <div className='grid grid-cols-2 sm:grid-cols-3 gap-3'>
               {bookableSlotsForSelectedDate.map((slot, index) => (
                 <button
-                  key={`${selectedDate}-${slot.startTime}-${index}`} // Ensure unique key
+                  key={`${selectedDate}-${slot.startTime}-${index}`}
                   type='button'
                   onClick={() => handleTimeSlotClick(slot)}
                   className={`
@@ -223,10 +207,9 @@ export default function AvailabilitySelector({
       {!isLoadingSlots &&
         selectedDate &&
         bookableSlotsForSelectedDate.length === 0 &&
-        !error && (
+        !error && ( // Only show "no slots" if there wasn't an error loading them
           <p className='text-gray-500 text-sm mt-3'>
-            No 2-hour slots available for this day. This may be due to existing
-            bookings or admin settings.
+            No 2-hour slots available for this day.
           </p>
         )}
     </div>

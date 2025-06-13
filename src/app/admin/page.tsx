@@ -69,7 +69,9 @@ export default function AdminAvailabilityPage() {
   const [availabilityError, setAvailabilityError] = useState<string | null>(
     null
   );
-
+  const [isUpdatingBooking, setIsUpdatingBooking] = useState<string | null>(
+    null
+  ); // Tracks which booking ID is being updated
   const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState<boolean>(true);
   const [bookingsError, setBookingsError] = useState<string | null>(null);
@@ -255,6 +257,57 @@ export default function AdminAvailabilityPage() {
     return false;
   };
 
+  const handleUpdateBookingStatus = async (
+    bookingId: string,
+    action: 'confirm' | 'cancel'
+  ) => {
+    setIsUpdatingBooking(bookingId);
+    setEditMessage(null); // Clear general edit messages
+    setEditMessageType(null);
+
+    try {
+      const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.booking) {
+        setUpcomingBookings((prevBookings) =>
+          prevBookings.map((b) =>
+            b._id.toString() === bookingId ? result.booking : b
+          )
+        );
+        // Set a success message specific to this action if desired, or rely on UI change
+        // For example:
+        // setEditMessage(`Booking ${bookingId} ${action === 'confirm' ? 'confirmed' : 'cancelled'}.`);
+        // setEditMessageType('success');
+      } else {
+        // Handle specific error from API or a generic one
+        setEditMessage(result.message || `Failed to ${action} booking.`);
+        setEditMessageType('error');
+        console.error(`Failed to ${action} booking:`, result.message);
+      }
+    } catch (error) {
+      console.error(`Error ${action}ing booking:`, error);
+      setEditMessage(
+        `An unexpected error occurred while ${action}ing the booking.`
+      );
+      setEditMessageType('error');
+    } finally {
+      setIsUpdatingBooking(null);
+    }
+  };
+  const handleConfirmBooking = async (bookingId: string) => {
+    await handleUpdateBookingStatus(bookingId, 'confirm');
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    await handleUpdateBookingStatus(bookingId, 'cancel');
+  };
+
   return (
     <div className='min-h-screen bg-gray-100 text-gray-800 flex flex-col font-sans'>
       <header className='bg-white shadow-md'>
@@ -284,6 +337,9 @@ export default function AdminAvailabilityPage() {
           error={bookingsError}
           formatDateDisplay={formatDateDisplay}
           formatBookingStatus={formatBookingStatus}
+          onConfirmBooking={handleConfirmBooking} // Pass down the handler
+          onCancelBooking={handleCancelBooking} // Pass down the handler
+          isUpdatingBooking={isUpdatingBooking} // Pass down loading state
         />
 
         <GeneralAvailabilityList

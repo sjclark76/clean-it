@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import AvailabilitySelector from '@/components/AvailabilitySelector';
+import FormField from '@/components/booking/FormField';
 
 interface BookingFormProps {
   services: string[];
@@ -19,6 +20,7 @@ export default function BookingForm({ services }: BookingFormProps) {
     text: string;
   } | null>(null);
 
+  // ... (handleSubmit and handleSlotSelected remain the same) ...
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -101,97 +103,51 @@ export default function BookingForm({ services }: BookingFormProps) {
         </div>
       )}
       <form onSubmit={handleSubmit} className='space-y-6'>
-        <div>
-          <label
-            htmlFor='name'
-            className='block text-sm font-medium text-gray-700 mb-1'
-          >
-            Full Name
-          </label>
-          <input
-            type='text'
-            name='name'
-            id='name'
-            required
-            className='w-full bg-gray-50 border-gray-300 text-gray-900 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500'
-            placeholder='e.g., John Doe'
-          />
-        </div>
+        <FormField
+          id='name'
+          label='Full Name'
+          name='name'
+          type='text'
+          required
+          placeholder='e.g., John Doe'
+        />
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          <div>
-            <label
-              htmlFor='phone'
-              className='block text-sm font-medium text-gray-700 mb-1'
-            >
-              Phone Number
-            </label>
-            <input
-              type='tel'
-              name='phone'
-              id='phone'
-              required
-              className='w-full bg-gray-50 border-gray-300 text-gray-900 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500'
-              placeholder='(555) 123-4567'
-            />
-          </div>
-          <div>
-            <label
-              htmlFor='email'
-              className='block text-sm font-medium text-gray-700 mb-1'
-            >
-              Email Address
-            </label>
-            <input
-              type='email'
-              name='email'
-              id='email'
-              required
-              className='w-full bg-gray-50 border-gray-300 text-gray-900 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500'
-              placeholder='you@example.com'
-            />
-          </div>
+          <FormField
+            id='phone'
+            label='Phone Number'
+            name='phone'
+            type='tel'
+            required
+            placeholder='(555) 123-4567'
+          />
+          <FormField
+            id='email'
+            label='Email Address'
+            name='email'
+            type='email'
+            required
+            placeholder='you@example.com'
+          />
         </div>
 
         <AvailabilitySelector onSlotSelect={handleSlotSelected} />
 
-        <div>
-          <label
-            htmlFor='service'
-            className='block text-sm font-medium text-gray-700 mb-1'
-          >
-            Service Type
-          </label>
-          <select
-            id='service'
-            name='service'
-            required
-            className='w-full bg-gray-50 border-gray-300 text-gray-900 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500'
-          >
-            <option value='' disabled>
-              Select a service
-            </option>
-            {services.map((service) => (
-              <option key={service} value={service}>
-                {service}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label
-            htmlFor='notes'
-            className='block text-sm font-medium text-gray-700 mb-1'
-          >
-            Additional Notes (Optional)
-          </label>
-          <textarea
-            id='notes'
-            name='notes'
-            rows={3}
-            className='w-full bg-gray-50 border-gray-300 text-gray-900 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500'
-            placeholder='e.g., specific areas of concern, car model, etc.'
-          ></textarea>
-        </div>
+        <FormField
+          id='service'
+          label='Service Type'
+          name='service'
+          type='select'
+          required
+          options={services}
+        />
+        <FormField
+          id='notes'
+          label='Additional Notes (Optional)'
+          name='notes'
+          type='textarea'
+          rows={3}
+          placeholder='e.g., specific areas of concern, car model, etc.'
+        />
         <div>
           <button
             type='submit'

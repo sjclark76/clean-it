@@ -277,7 +277,7 @@ export default function AdminAvailabilityPage() {
     bookingId: string | undefined,
     action: 'confirm' | 'cancel'
   ) => {
-    if (!bookingId) return; // Guard against undefined bookingId
+    if (!bookingId) return;
 
     setIsUpdatingBooking(bookingId);
     setEditMessage(null);
@@ -293,11 +293,21 @@ export default function AdminAvailabilityPage() {
       const result = await response.json();
 
       if (response.ok && result.booking) {
-        setUpcomingBookings((prevBookings) =>
-          prevBookings.map((b) =>
-            b._id?.toString() === bookingId ? result.booking : b
-          )
-        );
+        const updatedBookingFromServer = result.booking as Booking; // Cast to Booking type
+
+        setUpcomingBookings((prevBookings) => {
+          // If the booking was cancelled, filter it out of the list
+          if (updatedBookingFromServer.status === 'cancelled') {
+            return prevBookings.filter((b) => b._id?.toString() !== bookingId);
+          }
+          // Otherwise, update the existing booking in the list
+          return prevBookings.map((b) =>
+            b._id?.toString() === bookingId ? updatedBookingFromServer : b
+          );
+        });
+        // Optionally, you might want to refresh the general availability list
+        // if cancellations affect how you display those slots.
+        // fetchUpcomingAvailability();
       } else {
         setEditMessage(result.message || `Failed to ${action} booking.`);
         setEditMessageType('error');

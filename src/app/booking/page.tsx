@@ -7,11 +7,6 @@ import { CalendarIcon } from '@/components/icons/CalendarIcon';
 import BookingPageHeader from '@/components/booking/BookingPageHeader';
 import BookingForm from '@/components/booking/BookingForm';
 
-// Assuming CheckCircleIcon is moved to a shared location or defined here
-// For example, if you move it to components/icons/CheckCircleIcon.tsx
-// import { CheckCircleIcon } from '@/components/icons/CheckCircleIcon';
-
-// Placeholder if not moved yet (ideally, move to shared icons)
 const CheckCircleIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
   <svg
     xmlns='http://www.w3.org/2000/svg'

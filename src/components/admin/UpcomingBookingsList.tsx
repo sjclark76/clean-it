@@ -39,7 +39,7 @@ export default function UpcomingBookingsList({
         <div className='space-y-4 max-h-[calc(100vh-12rem)] overflow-y-auto pr-2'>
           {bookings.map((booking) => (
             <BookingCard
-              key={booking._id}
+              key={booking._id?.toString()}
               booking={booking}
               formatDateDisplay={formatDateDisplay}
               formatBookingStatus={formatBookingStatus}

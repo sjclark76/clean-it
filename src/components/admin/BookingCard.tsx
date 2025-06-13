@@ -9,7 +9,7 @@ interface BookingCardProps {
   formatBookingStatus: (status: Booking['status']) => string;
   onConfirmBooking: (bookingId: string | undefined) => Promise<void>;
   onCancelBooking: (bookingId: string | undefined) => Promise<void>;
-  isUpdatingBooking: string | null;
+  isUpdatingBooking: string | null; // Tracks which booking ID is being updated
 }
 
 export default function BookingCard({
@@ -22,16 +22,15 @@ export default function BookingCard({
 }: BookingCardProps) {
   const bookingIdStr = booking._id?.toString();
 
-  console.log({ booking });
   return (
     <div
       key={bookingIdStr}
       className='p-4 border rounded-lg bg-slate-50 shadow-sm'
     >
+      {/* ... (rest of the card content remains the same) ... */}
       <div className='flex justify-between items-start mb-2'>
         <div>
           <h3 className='text-lg font-semibold text-purple-700'>
-            {/* Assuming formatDateDisplay correctly handles ISO strings if booking.startTime is ISO */}
             {formatDateDisplay(booking.date)} @ {booking.startTime} -{' '}
             {booking.endTime}
           </h3>
@@ -79,22 +78,31 @@ export default function BookingCard({
           </p>
         )}
       </div>
-      {booking.status === 'pending_confirmation' && (
+
+      {/* Action buttons section */}
+      {/* Show actions if booking is not already cancelled */}
+      {booking.status !== 'cancelled' && (
         <div className='mt-3 pt-3 border-t border-gray-200 flex space-x-2'>
-          <button
-            onClick={() => onConfirmBooking(bookingIdStr)}
-            disabled={isUpdatingBooking === bookingIdStr}
-            className='px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed'
-          >
-            {isUpdatingBooking === bookingIdStr ? 'Confirming...' : 'Confirm'}
-          </button>
-          <button
-            onClick={() => onCancelBooking(bookingIdStr)}
-            disabled={isUpdatingBooking === bookingIdStr}
-            className='px-3 py-1.5 text-xs font-medium text-white bg-red-500 rounded-md hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed'
-          >
-            {isUpdatingBooking === bookingIdStr ? 'Cancelling...' : 'Cancel'}
-          </button>
+          {booking.status === 'pending_confirmation' && (
+            <button
+              onClick={() => onConfirmBooking(bookingIdStr)}
+              disabled={isUpdatingBooking === bookingIdStr}
+              className='px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed'
+            >
+              {isUpdatingBooking === bookingIdStr ? 'Confirming...' : 'Confirm'}
+            </button>
+          )}
+          {/* Show Cancel button if status is pending_confirmation OR confirmed */}
+          {(booking.status === 'pending_confirmation' ||
+            booking.status === 'confirmed') && (
+            <button
+              onClick={() => onCancelBooking(bookingIdStr)}
+              disabled={isUpdatingBooking === bookingIdStr}
+              className='px-3 py-1.5 text-xs font-medium text-white bg-red-500 rounded-md hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed'
+            >
+              {isUpdatingBooking === bookingIdStr ? 'Cancelling...' : 'Cancel'}
+            </button>
+          )}
         </div>
       )}
     </div>

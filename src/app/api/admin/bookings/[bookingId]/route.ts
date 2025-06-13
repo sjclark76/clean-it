@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { Booking } from '@/types';
-import { getDb } from '@/lib/mongodb'; // Import the shared utility
+import { getDb } from '@/lib/mongodb';
 
 const bookingsCollectionName = 'bookings';
 
@@ -23,6 +23,8 @@ export async function PATCH(
     );
   }
 
+  const objectId = new ObjectId(bookingId); // Convert string to ObjectId
+
   try {
     const body = (await request.json()) as PatchRequestBody;
     const { action } = body;
@@ -34,11 +36,11 @@ export async function PATCH(
       );
     }
 
-    const db = await getDb(); // Use the shared function
+    const db = await getDb();
     const bookingsColl = db.collection<Booking>(bookingsCollectionName);
 
     const bookingToUpdate = await bookingsColl.findOne({
-      _id: bookingId,
+      _id: objectId, // Use ObjectId instance here
     });
 
     if (!bookingToUpdate) {
@@ -48,23 +50,43 @@ export async function PATCH(
       );
     }
 
-    if (bookingToUpdate.status !== 'pending_confirmation') {
-      return NextResponse.json(
-        { message: `Booking is already ${bookingToUpdate.status}.` },
-        { status: 409 }
-      );
-    }
-
     let newStatus: Booking['status'];
+
     if (action === 'confirm') {
+      if (bookingToUpdate.status !== 'pending_confirmation') {
+        return NextResponse.json(
+          {
+            message: `Booking is already ${bookingToUpdate.status}. Only pending bookings can be confirmed.`,
+          },
+          { status: 409 }
+        );
+      }
       newStatus = 'confirmed';
     } else {
       // action === 'cancel'
+      if (bookingToUpdate.status === 'cancelled') {
+        return NextResponse.json(
+          { message: 'Booking is already cancelled.' },
+          { status: 409 }
+        );
+      }
+      // Allow cancellation for 'pending_confirmation' or 'confirmed'
+      if (
+        bookingToUpdate.status !== 'pending_confirmation' &&
+        bookingToUpdate.status !== 'confirmed'
+      ) {
+        return NextResponse.json(
+          {
+            message: `Cannot cancel booking with status: ${bookingToUpdate.status}.`,
+          },
+          { status: 409 }
+        );
+      }
       newStatus = 'cancelled';
     }
 
     const updateResult = await bookingsColl.updateOne(
-      { _id: bookingId },
+      { _id: objectId }, // Use ObjectId instance here
       { $set: { status: newStatus } }
     );
 
@@ -72,13 +94,15 @@ export async function PATCH(
       return NextResponse.json(
         {
           message:
-            'Booking status not updated. It might have been changed already or booking not found.',
+            'Booking status not updated. It might have been changed concurrently or an issue occurred.',
         },
         { status: 409 }
       );
     }
 
-    const updatedBooking = await bookingsColl.findOne({ _id: bookingId });
+    const updatedBooking = await bookingsColl.findOne({
+      _id: objectId, // Use ObjectId instance here
+    });
 
     return NextResponse.json(
       {
@@ -96,5 +120,4 @@ export async function PATCH(
       { status: 500 }
     );
   }
-  // No finally block needed here to close client, as it's managed by the utility
 }

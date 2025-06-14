@@ -4,8 +4,8 @@
 import { useState } from 'react'; // Import useState
 import Link from 'next/link'; // Import Link
 import { CalendarIcon } from '@/components/icons/CalendarIcon';
-import BookingPageHeader from '@/components/booking/BookingPageHeader';
 import BookingForm from '@/components/booking/BookingForm';
+import SecondaryPageHeader from '@/components/shared/SecondaryPageHeader';
 
 const CheckCircleIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
   <svg
@@ -41,7 +41,7 @@ export default function BookingPage() {
 
   return (
     <div className='min-h-screen bg-gray-100 text-gray-800 flex flex-col font-sans'>
-      <BookingPageHeader />
+      <SecondaryPageHeader />
 
       <main className='flex-grow py-12 md:py-20'>
         <div className='container mx-auto px-4 sm:px-6'>

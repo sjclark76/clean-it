@@ -1,8 +1,10 @@
-// src/app/api/admin/bookings/[bookingId]/route.ts
+// Example: src/app/api/admin/bookings/[bookingId]/route.ts
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { Booking } from '@/types';
 import { getDb } from '@/lib/mongodb';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'; // Import getServerSession
 
 const bookingsCollectionName = 'bookings';
 
@@ -14,6 +16,15 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ bookingId: string }> }
 ) {
+  // --- Add this session check ---
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    // If no session, return unauthorized
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+  // --- End session check ---
+
   const { bookingId } = await params;
 
   if (!ObjectId.isValid(bookingId)) {
@@ -23,7 +34,7 @@ export async function PATCH(
     );
   }
 
-  const objectId = new ObjectId(bookingId); // Convert string to ObjectId
+  const objectId = new ObjectId(bookingId);
 
   try {
     const body = (await request.json()) as PatchRequestBody;
@@ -40,7 +51,7 @@ export async function PATCH(
     const bookingsColl = db.collection<Booking>(bookingsCollectionName);
 
     const bookingToUpdateOrDelete = await bookingsColl.findOne({
-      _id: objectId, // Use ObjectId instance here
+      _id: objectId,
     });
 
     if (!bookingToUpdateOrDelete) {
@@ -82,35 +93,23 @@ export async function PATCH(
       return NextResponse.json(
         {
           message: `Booking ${newStatus} successfully.`,
-          booking: updatedBooking, // Return the updated booking for confirmation
+          booking: updatedBooking,
         },
         { status: 200 }
       );
     } else {
       // action === 'cancel'
-      // Allow cancellation (deletion) for 'pending_confirmation' or 'confirmed'
       if (
         bookingToUpdateOrDelete.status !== 'pending_confirmation' &&
-        bookingToUpdateOrDelete.status !== 'confirmed'
+        bookingToUpdateOrDelete.status !== 'confirmed' &&
+        bookingToUpdateOrDelete.status !== 'cancelled' // Allow deleting already cancelled ones
       ) {
-        // If already cancelled or in another state not allowing cancellation,
-        // you might want to return an error or just state it cannot be deleted.
-        // For simplicity, if it's already 'cancelled', deleting it is fine.
-        // If it's in a state that shouldn't be deleted, this check is important.
-        if (bookingToUpdateOrDelete.status === 'cancelled') {
-          // If you want to prevent deleting already "logically" cancelled bookings:
-          // return NextResponse.json(
-          //   { message: 'Booking was already cancelled and will now be deleted.' },
-          //   { status: 200 } // Or 409 if you want to prevent re-action
-          // );
-        } else {
-          return NextResponse.json(
-            {
-              message: `Cannot delete booking with status: ${bookingToUpdateOrDelete.status}. Only pending or confirmed bookings can be deleted.`,
-            },
-            { status: 409 }
-          );
-        }
+        return NextResponse.json(
+          {
+            message: `Cannot delete booking with status: ${bookingToUpdateOrDelete.status}. Only pending, confirmed, or already cancelled bookings can be deleted.`,
+          },
+          { status: 409 }
+        );
       }
 
       const deleteResult = await bookingsColl.deleteOne({ _id: objectId });
@@ -121,16 +120,15 @@ export async function PATCH(
             message:
               'Booking not deleted. It might have been deleted concurrently or an issue occurred.',
           },
-          { status: 404 } // Or 409 if you prefer
+          { status: 404 }
         );
       }
 
       return NextResponse.json(
         {
           message: `Booking cancelled and deleted successfully.`,
-          // No booking object to return as it's deleted
         },
-        { status: 200 } // 200 OK or 204 No Content are both suitable
+        { status: 200 }
       );
     }
   } catch (error) {

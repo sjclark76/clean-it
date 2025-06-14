@@ -1,8 +1,7 @@
-// src/app/api/bookings/route.ts
-import { NextResponse, NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/lib/mongodb';
 import { Booking, DayAvailability } from '@/types';
 import { minutesToTime, timeToMinutes } from '@/shared/timeFunctions';
-import { getDb } from '@/lib/mongodb'; // Import the shared utility
 
 const bookingsCollectionName = 'bookings';
 const availabilitiesCollectionName = 'availabilities';
@@ -140,32 +139,4 @@ export async function POST(request: NextRequest) {
     );
   }
   // No finally block needed here to close client, as it's managed by the utility
-}
-
-export async function GET() {
-  try {
-    const db = await getDb(); // Use the shared function
-    const bookingsColl = db.collection<Booking>(bookingsCollectionName);
-
-    const todayStr = new Date().toISOString().split('T')[0];
-
-    const upcomingBookings = await bookingsColl
-      .find({
-        date: { $gte: todayStr },
-        status: { $ne: 'cancelled' },
-      })
-      .sort({ date: 1, startTime: 1 })
-      .toArray();
-
-    return NextResponse.json(upcomingBookings);
-  } catch (error) {
-    console.error('Failed to fetch bookings:', error);
-    return NextResponse.json(
-      {
-        message: 'Failed to retrieve bookings',
-        error: (error as Error).message,
-      },
-      { status: 500 }
-    );
-  }
 }

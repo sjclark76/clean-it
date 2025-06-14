@@ -141,7 +141,7 @@ export default function AvailabilitySelector({
       <div className='mb-6'>
         <Listbox value={selectedDate} onChange={setSelectedDate}>
           {({ open }) => (
-            <>
+            <React.Fragment>
               <Listbox.Label className='block text-sm font-medium text-gray-700 mb-1'>
                 Choose a Date:
               </Listbox.Label>
@@ -210,7 +210,7 @@ export default function AvailabilitySelector({
                   </Listbox.Options>
                 </Transition>
               </div>
-            </>
+            </React.Fragment>
           )}
         </Listbox>
       </div>

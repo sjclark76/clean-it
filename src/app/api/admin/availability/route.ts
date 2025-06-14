@@ -1,7 +1,9 @@
 // src/app/api/availability/route.ts
 import { NextResponse, NextRequest } from 'next/server';
 import { UpdateResult } from 'mongodb';
-import { getDb } from '@/lib/mongodb'; // Import the shared utility
+import { getDb } from '@/lib/mongodb';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getServerSession } from 'next-auth'; // Import the shared utility
 
 interface TimeSlot {
   id: string;
@@ -19,6 +21,15 @@ interface DayAvailability {
 const collectionName = 'availabilities';
 
 export async function GET() {
+  // --- Add this session check ---
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    // If no session, return unauthorized
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+  // --- End session check ---
+
   try {
     const db = await getDb(); // Use the shared function
     console.log(

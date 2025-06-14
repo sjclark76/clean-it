@@ -98,24 +98,24 @@ export default function HomePage() {
             Jessiah`&apos;s Car Spa
           </a>
           <div className='space-x-2 sm:space-x-4'>
-            {/*<a*/}
-            {/*  href='#services'*/}
-            {/*  className='px-3 py-2 text-gray-700 hover:text-purple-600 transition-colors duration-300'*/}
-            {/*>*/}
-            {/*  Services*/}
-            {/*</a>*/}
+            <Link
+              href='/admin'
+              className='px-3 py-2 text-gray-700 hover:text-purple-600 transition-colors duration-300'
+            >
+              Admin
+            </Link>
             <Link
               href='#about'
               className='px-3 py-2 text-gray-700 hover:text-purple-600 transition-colors duration-300'
             >
               About
             </Link>
-            <a
+            <Link
               href='/booking' // Updated to link to booking page
               className='bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105'
             >
               Book Now
-            </a>
+            </Link>
           </div>
         </nav>
       </header>

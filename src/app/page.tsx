@@ -106,18 +106,18 @@ export default function HomePage() {
           <div className='container mx-auto px-4 sm:px-6 relative z-10'>
             <CarWashIcon className='w-16 h-16 text-purple-500 mx-auto mb-6' />
             <h1 className='text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 tracking-tight text-gray-900'>
-              <span className='block'>Jessiah&apos;s Premium</span>
-              <span className='block text-purple-600'>Car Care Services</span>
+              <span className='block'>Jessiah&apos;s</span>
+              <span className=' text-purple-600'>Car Spa</span>
             </h1>
             <p className='text-lg sm:text-xl md:text-2xl text-gray-700 mb-10 max-w-2xl mx-auto'>
               Experience the ultimate clean. We meticulously restore your
-              car&apos;s shine, inside and out!
+              car&apos;s inside shine!
             </p>
             <Link // Changed from <a> to <Link>
               href='/booking'
               className='bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-600/50'
             >
-              Schedule Your Detail
+              Schedule Your Clean
             </Link>
           </div>
         </section>

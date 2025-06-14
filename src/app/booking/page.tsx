@@ -104,7 +104,7 @@ export default function BookingPage() {
       <footer className='bg-gray-200 text-center py-10'>
         <div className='container mx-auto px-4 sm:px-6'>
           <p className='text-gray-600'>
-            &copy; {new Date().getFullYear()} Jessiah`&apos;s Car Cleaning.
+            &copy; {new Date().getFullYear()} Jessiah&apos;s Car Cleaning.
           </p>
         </div>
       </footer>

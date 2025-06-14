@@ -107,7 +107,7 @@ export default function AdminAvailabilityPage() {
 
       <footer className='bg-gray-200 text-center py-6 mt-auto'>
         <p className='text-gray-600'>
-          &copy; {new Date().getFullYear()} Jessiah`&apos;s Car Cleaning - Admin
+          &copy; {new Date().getFullYear()} Jessiah&apos;s Car Cleaning - Admin
         </p>
       </footer>
     </div>

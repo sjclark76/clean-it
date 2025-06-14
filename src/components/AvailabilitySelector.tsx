@@ -1,9 +1,9 @@
 // src/components/AvailabilitySelector.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback, Fragment } from 'react'; // Added Fragment
-import { Listbox, Transition } from '@headlessui/react'; // Import Listbox and Transition
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'; // Icons for Listbox
+import React, { useState, useEffect, useCallback } from 'react'; // Removed Fragment from here as it's not needed
+import { Listbox, Transition } from '@headlessui/react';
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 import { DayAvailability } from '@/types';
 
 interface BookableSlot {
@@ -23,7 +23,7 @@ export default function AvailabilitySelector({
     useState<BookableSlot[]>([]);
   const [selectedDate, setSelectedDate] = useState<DayAvailability | null>(
     null
-  ); // Changed to store the whole DayAvailability object
+  );
   const [selectedBookableSlotTime, setSelectedBookableSlotTime] = useState<
     string | null
   >(null);
@@ -41,10 +41,6 @@ export default function AvailabilitySelector({
           throw new Error('Failed to fetch bookable admin dates');
         const data: DayAvailability[] = await response.json();
         setAdminDates(data);
-        // Optionally, pre-select the first available date
-        // if (data.length > 0) {
-        //   setSelectedDate(data[0]);
-        // }
       } catch (err) {
         setError(
           err instanceof Error ? err.message : 'Unknown error fetching dates'
@@ -79,28 +75,23 @@ export default function AvailabilitySelector({
 
   useEffect(() => {
     if (selectedDate) {
-      fetchBookableSlotsForDate(selectedDate.date); // Use selectedDate.date
+      fetchBookableSlotsForDate(selectedDate.date);
     } else {
       setBookableSlotsForSelectedDate([]);
     }
   }, [selectedDate, fetchBookableSlotsForDate]);
 
-  // handleDateChange is now handled by Listbox's onChange
-  // const handleDateChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-  //   setSelectedDate(event.target.value);
-  // };
-
   const handleTimeSlotClick = (slot: BookableSlot) => {
     if (selectedDate) {
       setSelectedBookableSlotTime(slot.startTime);
-      onSlotSelect(selectedDate.date, slot.startTime); // Use selectedDate.date
+      onSlotSelect(selectedDate.date, slot.startTime);
     } else {
       console.error('Date not selected, cannot select time slot.');
     }
   };
 
   const formatDateDisplay = (dateString: string) => {
-    const dateObj = new Date(dateString + 'T00:00:00'); // Ensure correct date parsing
+    const dateObj = new Date(dateString + 'T00:00:00');
     return dateObj.toLocaleDateString(undefined, {
       weekday: 'long',
       year: 'numeric',
@@ -141,7 +132,8 @@ export default function AvailabilitySelector({
       <div className='mb-6'>
         <Listbox value={selectedDate} onChange={setSelectedDate}>
           {({ open }) => (
-            <React.Fragment>
+            // Replace React.Fragment with a div
+            <div>
               <Listbox.Label className='block text-sm font-medium text-gray-700 mb-1'>
                 Choose a Date:
               </Listbox.Label>
@@ -164,7 +156,7 @@ export default function AvailabilitySelector({
 
                 <Transition
                   show={open && adminDates.length > 0}
-                  as={Fragment}
+                  // as={Fragment} // This was already correctly removed/commented
                   leave='transition ease-in duration-100'
                   leaveFrom='opacity-100'
                   leaveTo='opacity-0'
@@ -210,18 +202,17 @@ export default function AvailabilitySelector({
                   </Listbox.Options>
                 </Transition>
               </div>
-            </React.Fragment>
+            </div>
           )}
         </Listbox>
       </div>
 
-      {isLoadingSlots &&
-        selectedDate && ( // Show loading only if a date is selected
-          <div className='p-4 text-center text-gray-600'>
-            Loading available slots for {formatDateDisplay(selectedDate.date)}
-            ...
-          </div>
-        )}
+      {isLoadingSlots && selectedDate && (
+        <div className='p-4 text-center text-gray-600'>
+          Loading available slots for {formatDateDisplay(selectedDate.date)}
+          ...
+        </div>
+      )}
 
       {selectedDate && error && !isLoadingSlots && (
         <div className='p-4 text-center text-red-600'>
@@ -261,7 +252,7 @@ export default function AvailabilitySelector({
       {!isLoadingSlots &&
         selectedDate &&
         bookableSlotsForSelectedDate.length === 0 &&
-        !error && ( // Only show "no slots" if there wasn't an error loading them
+        !error && (
           <p className='text-gray-500 text-sm mt-3'>
             No 2-hour slots available for this day.
           </p>

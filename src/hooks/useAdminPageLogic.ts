@@ -257,7 +257,7 @@ export function useAdminPageLogic() {
         setEditMessage(result.message || `Failed to ${action} booking.`);
         setEditMessageType('error');
       }
-    } catch (error) {
+    } catch {
       setEditMessage(
         `An unexpected error occurred while ${action}ing the booking.`
       );

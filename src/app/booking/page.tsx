@@ -26,13 +26,6 @@ const CheckCircleIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
 );
 
 export default function BookingPage() {
-  const services = [
-    'Exterior Wash & Wax',
-    'Interior Deep Clean',
-    'Full Detail Package',
-    'Other (Please specify in notes)',
-  ];
-
   const [isBookingSuccessful, setIsBookingSuccessful] = useState(false); // New state
 
   const handleSuccessfulBooking = () => {
@@ -87,7 +80,6 @@ export default function BookingPage() {
                 </div>
 
                 <BookingForm
-                  services={services}
                   onBookingSuccess={handleSuccessfulBooking} // Pass the handler
                 />
 

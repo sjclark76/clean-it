@@ -6,12 +6,10 @@ import AvailabilitySelector from '@/components/AvailabilitySelector';
 import FormField from '@/components/booking/FormField';
 
 interface BookingFormProps {
-  services: string[];
   onBookingSuccess: () => void; // Add this prop
 }
 
 export default function BookingForm({
-  services,
   onBookingSuccess, // Destructure the prop
 }: BookingFormProps) {
   const [selectedBookingSlot, setSelectedBookingSlot] = useState<{

@@ -6,10 +6,11 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { XIcon } from '@/components/icons/XIcon';
 import { MenuIcon } from '@/components/icons/MenuIcon';
-import { BikeIcon } from '@/app/components/icons/bikeIcon';
-import { CheckCircleIcon } from '@/app/components/icons/checkCircleIcon';
+import { CheckCircleIcon } from '@/components/icons/CheckCircleIcon';
 import { SparkleIcon } from '@/components/icons/SparkleIcon';
-import { CarWashIcon } from '@/components/icons/CarWashIcon'; // Import useState
+import { CarWashIcon } from '@/components/icons/CarWashIcon';
+import FindUsSection from '@/components/home/FindUsSection';
+import { BikeIcon } from '@/components/icons/BikeIcon';
 
 export default function HomePage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -23,7 +24,7 @@ export default function HomePage() {
       {/* Header/Navbar */}
       <header className='bg-white/80 backdrop-blur-md shadow-md sticky top-0 z-50'>
         <nav className='container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center'>
-          <Link // Changed from <a> to <Link> for Next.js internal navigation
+          <Link
             href='/'
             className='text-xl sm:text-2xl font-bold text-purple-600 hover:text-purple-500 transition-colors duration-300 flex items-center'
           >
@@ -44,6 +45,12 @@ export default function HomePage() {
               className='px-3 py-2 text-gray-700 hover:text-purple-600 transition-colors duration-300'
             >
               About
+            </Link>
+            <Link
+              href='#location' // Link to the new location section
+              className='px-3 py-2 text-gray-700 hover:text-purple-600 transition-colors duration-300'
+            >
+              Find Us
             </Link>
             <Link
               href='/booking'
@@ -76,21 +83,28 @@ export default function HomePage() {
               <Link
                 href='/admin'
                 className='block px-3 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-md transition-colors duration-300'
-                onClick={toggleMobileMenu} // Close menu on click
+                onClick={toggleMobileMenu}
               >
                 Admin
               </Link>
               <Link
                 href='#about'
                 className='block px-3 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-md transition-colors duration-300'
-                onClick={toggleMobileMenu} // Close menu on click
+                onClick={toggleMobileMenu}
               >
                 About
               </Link>
               <Link
+                href='#location' // Link to the new location section
+                className='block px-3 py-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-md transition-colors duration-300'
+                onClick={toggleMobileMenu}
+              >
+                Find Us
+              </Link>
+              <Link
                 href='/booking'
                 className='block bg-purple-600 hover:bg-purple-700 text-white font-semibold px-3 py-3 rounded-lg transition-all duration-300 text-center'
-                onClick={toggleMobileMenu} // Close menu on click
+                onClick={toggleMobileMenu}
               >
                 Book Now
               </Link>
@@ -113,7 +127,7 @@ export default function HomePage() {
               Experience the ultimate clean. I meticulously restore your
               car&apos;s inside shine!
             </p>
-            <Link // Changed from <a> to <Link>
+            <Link
               href='/booking'
               className='bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-600/50'
             >
@@ -122,15 +136,16 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* About Jessiah Section - UPDATED */}
+        {/* About Jessiah Section */}
         <section id='about' className='py-16 md:py-24 bg-gray-100'>
+          {/* ... existing about section content ... */}
           <div className='container mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center gap-8 md:gap-12'>
             <div className='md:w-1/2'>
               <Image
                 src='/car_cleaning.JPG'
                 alt="Jessiah's Car Cleaning and Biking Goal"
-                width={600} // Add width
-                height={400} // Add height
+                width={600}
+                height={400}
                 className='rounded-lg shadow-2xl aspect-video object-cover'
               />
             </div>
@@ -186,11 +201,15 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* How to Find Us Section - NEW */}
+        <FindUsSection />
+
         {/* Call to Action / Contact Section */}
         <section
           id='contact'
           className='py-16 md:py-24 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white'
         >
+          {/* ... existing contact section content ... */}
           <div className='container mx-auto px-4 sm:px-6 text-center'>
             <h2 className='text-3xl sm:text-4xl font-bold mb-6'>
               Ready for a Spotless Car?
@@ -200,7 +219,7 @@ export default function HomePage() {
               experience the difference!
             </p>
 
-            <Link // Changed from <a> to <Link>
+            <Link
               href='/booking'
               className='bg-gray-100 hover:bg-gray-200 text-purple-700 font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 shadow-lg'
             >
@@ -212,6 +231,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className='bg-gray-200 text-center py-10'>
+        {/* ... existing footer content ... */}
         <div className='container mx-auto px-4 sm:px-6'>
           <p className='text-gray-600 mb-2'>
             &copy; {new Date().getFullYear()} Jessiah&apos;s Car Spa. All Rights

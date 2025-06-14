@@ -34,9 +34,6 @@ export default function BookingCard({
             {formatDateDisplay(booking.date)} @ {booking.startTime} -{' '}
             {booking.endTime}
           </h3>
-          <p className='text-sm text-gray-600'>
-            Service: {booking.serviceType}
-          </p>
         </div>
         <span
           className={`px-2 py-1 text-xs font-semibold rounded-full ${

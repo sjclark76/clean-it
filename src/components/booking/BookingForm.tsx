@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import AvailabilitySelector from '@/components/AvailabilitySelector';
 import FormField from '@/components/booking/FormField';
-import StyledDropdown from '@/components/shared/StyledDropdown';
 
 interface BookingFormProps {
   services: string[];
@@ -24,12 +23,6 @@ export default function BookingForm({
     type: 'success' | 'error';
     text: string;
   } | null>(null);
-  const [selectedService, setSelectedService] = useState<string | null>(null);
-
-  const serviceOptions = services.map((service) => ({
-    label: service,
-    value: service,
-  }));
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -45,14 +38,6 @@ export default function BookingForm({
       setIsLoading(false);
       return;
     }
-    if (!selectedService) {
-      setFormMessage({
-        type: 'error',
-        text: 'Please select a service type.',
-      });
-      setIsLoading(false);
-      return;
-    }
 
     const formData = new FormData(form);
     const bookingPayload = {
@@ -61,7 +46,6 @@ export default function BookingForm({
       clientName: formData.get('name') as string,
       clientEmail: formData.get('email') as string,
       clientPhone: formData.get('phone') as string,
-      serviceType: selectedService,
       notes: formData.get('notes') as string | undefined,
     };
 
@@ -77,7 +61,6 @@ export default function BookingForm({
       if (response.ok) {
         form.reset();
         setSelectedBookingSlot(null);
-        setSelectedService(null);
         onBookingSuccess(); // Call the success callback
       } else {
         setFormMessage({
@@ -138,15 +121,15 @@ export default function BookingForm({
 
         <AvailabilitySelector onSlotSelect={handleSlotSelected} />
 
-        <StyledDropdown
-          id='service'
-          label='Service Type'
-          name='service'
-          value={selectedService}
-          onChange={setSelectedService}
-          options={serviceOptions}
-          placeholder='Select a service'
-        />
+        {/*<StyledDropdown*/}
+        {/*  id='service'*/}
+        {/*  label='Service Type'*/}
+        {/*  name='service'*/}
+        {/*  value={selectedService}*/}
+        {/*  onChange={setSelectedService}*/}
+        {/*  options={serviceOptions}*/}
+        {/*  placeholder='Select a service'*/}
+        {/*/>*/}
 
         <FormField
           id='notes'
@@ -158,7 +141,7 @@ export default function BookingForm({
         <div>
           <button
             type='submit'
-            disabled={isLoading || !selectedBookingSlot || !selectedService}
+            disabled={isLoading || !selectedBookingSlot}
             className='w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed'
           >
             {isLoading ? 'Submitting Request...' : 'Request Appointment'}

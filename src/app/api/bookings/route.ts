@@ -15,8 +15,7 @@ export async function POST(request: NextRequest) {
       !bookingData.startTime ||
       !bookingData.clientName ||
       !bookingData.clientEmail ||
-      !bookingData.clientPhone ||
-      !bookingData.serviceType
+      !bookingData.clientPhone
     ) {
       return NextResponse.json(
         { message: 'Missing required booking fields' },
@@ -44,7 +43,6 @@ export async function POST(request: NextRequest) {
       clientName: bookingData.clientName,
       clientEmail: bookingData.clientEmail,
       clientPhone: bookingData.clientPhone,
-      serviceType: bookingData.serviceType,
       notes: bookingData.notes || '',
       status: 'pending_confirmation',
       createdAt: new Date(),

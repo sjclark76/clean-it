@@ -22,7 +22,6 @@ export interface Booking {
   clientName: string;
   clientEmail: string;
   clientPhone: string;
-  serviceType: string;
   notes?: string;
   status: 'pending_confirmation' | 'confirmed' | 'cancelled';
   createdAt: Date;

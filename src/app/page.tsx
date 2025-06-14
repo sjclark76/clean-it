@@ -3,6 +3,7 @@
 
 // For Next.js App Router, metadata is exported like this:
 import Link from 'next/link';
+import Image from 'next/image';
 
 export const metadata = {
   title: "Jessiah's Car Cleaning - Premium Detailing Services",
@@ -203,7 +204,7 @@ export default function HomePage() {
         <section id='about' className='py-16 md:py-24 bg-gray-100'>
           <div className='container mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center gap-8 md:gap-12'>
             <div className='md:w-1/2'>
-              <img
+              <Image
                 src='/car_cleaning.JPG'
                 alt="Jessiah's Car Cleaning and Biking Goal"
                 className='rounded-lg shadow-2xl aspect-video object-cover'

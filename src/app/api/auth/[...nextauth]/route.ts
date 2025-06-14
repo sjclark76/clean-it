@@ -45,7 +45,8 @@ export const authOptions = {
       token: JWT;
       user?: User | null;
     }): Promise<JWT> {
-      // Type parameters      // Add user data to the token
+      // Type parameters
+      // Add user data to the token
       if (user) {
         token.id = user.id;
       }
@@ -61,6 +62,8 @@ export const authOptions = {
       if (session.user && token.id) {
         // NextAuth's default Session type might not have 'id' on user.
         // You might need to augment the Session type or cast.
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (session.user as any).id = token.id;
         // session.user.name = token.name as string | null | undefined;
         // session.user.email = token.email as string | null | undefined;

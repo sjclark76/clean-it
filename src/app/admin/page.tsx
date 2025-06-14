@@ -13,6 +13,7 @@ import AvailabilityEditor from '@/components/admin/AvailabilityEditor';
 import UpcomingBookingsList from '@/components/admin/UpcomingBookingsList';
 import GeneralAvailabilityList from '@/components/admin/GeneralAvailabilityList';
 import SecondaryPageHeader from '@/components/shared/SecondaryPageHeader';
+import Footer from '@/components/shared/Footer';
 
 export default function AdminAvailabilityPage() {
   const { status } = useSession();
@@ -64,7 +65,7 @@ export default function AdminAvailabilityPage() {
     return null;
   }
 
-  // If status is 'authenticated', render the page content
+  // If the status is 'authenticated', render the page content
   return (
     <div className='min-h-screen bg-gray-100 text-gray-800 flex flex-col font-sans'>
       <SecondaryPageHeader />
@@ -105,11 +106,7 @@ export default function AdminAvailabilityPage() {
         />
       </main>
 
-      <footer className='bg-gray-200 text-center py-6 mt-auto'>
-        <p className='text-gray-600'>
-          &copy; {new Date().getFullYear()} Jessiah&apos;s Car Cleaning - Admin
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }

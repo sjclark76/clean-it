@@ -1,10 +1,10 @@
-// Example: src/app/api/admin/bookings/[bookingId]/route.ts
-import { NextResponse } from 'next/server';
+// src/app/api/admin/bookings/[bookingId]/route.ts
+import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { Booking } from '@/types';
 import { getDb } from '@/lib/mongodb';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/shared/authOptions';
+import { withAdminAuth } from '@/lib/withAdminAuth';
+import { Session as NextAuthSession } from 'next-auth';
 
 const bookingsCollectionName = 'bookings';
 
@@ -12,20 +12,18 @@ interface PatchRequestBody {
   action: 'confirm' | 'cancel';
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ bookingId: string }> }
+// Define the specific shape of params for this route
+interface BookingIdParams {
+  bookingId: string;
+}
+
+// Updated handler signature
+async function patchBookingHandler(
+  request: NextRequest,
+  context: { params: BookingIdParams; session: NextAuthSession } // Context now clearly typed
 ) {
-  // --- Add this session check ---
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    // If no session, return unauthorized
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
-  // --- End session check ---
-
-  const { bookingId } = await params;
+  const { bookingId } = context.params; // Access params from context
+  // const session = context.session; // Session is available if needed
 
   if (!ObjectId.isValid(bookingId)) {
     return NextResponse.json(
@@ -85,11 +83,7 @@ export async function PATCH(
           { status: 409 }
         );
       }
-
-      const updatedBooking = await bookingsColl.findOne({
-        _id: objectId,
-      });
-
+      const updatedBooking = await bookingsColl.findOne({ _id: objectId });
       return NextResponse.json(
         {
           message: `Booking ${newStatus} successfully.`,
@@ -102,7 +96,7 @@ export async function PATCH(
       if (
         bookingToUpdateOrDelete.status !== 'pending_confirmation' &&
         bookingToUpdateOrDelete.status !== 'confirmed' &&
-        bookingToUpdateOrDelete.status !== 'cancelled' // Allow deleting already cancelled ones
+        bookingToUpdateOrDelete.status !== 'cancelled'
       ) {
         return NextResponse.json(
           {
@@ -111,9 +105,7 @@ export async function PATCH(
           { status: 409 }
         );
       }
-
       const deleteResult = await bookingsColl.deleteOne({ _id: objectId });
-
       if (deleteResult.deletedCount === 0) {
         return NextResponse.json(
           {
@@ -123,11 +115,8 @@ export async function PATCH(
           { status: 404 }
         );
       }
-
       return NextResponse.json(
-        {
-          message: `Booking cancelled and deleted successfully.`,
-        },
+        { message: 'Booking cancelled and deleted successfully.' },
         { status: 200 }
       );
     }
@@ -141,3 +130,6 @@ export async function PATCH(
     );
   }
 }
+
+// Explicitly provide the generic type for params to withAdminAuth
+export const PATCH = withAdminAuth<BookingIdParams>(patchBookingHandler);

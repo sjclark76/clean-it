@@ -6,6 +6,7 @@ import Link from 'next/link'; // Import Link
 import { CalendarIcon } from '@/components/icons/CalendarIcon';
 import BookingForm from '@/components/booking/BookingForm';
 import SecondaryPageHeader from '@/components/shared/SecondaryPageHeader';
+import Footer from '@/components/shared/Footer';
 
 const CheckCircleIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
   <svg
@@ -93,13 +94,7 @@ export default function BookingPage() {
         </div>
       </main>
 
-      <footer className='bg-gray-200 text-center py-10'>
-        <div className='container mx-auto px-4 sm:px-6'>
-          <p className='text-gray-600'>
-            &copy; {new Date().getFullYear()} Jessiah&apos;s Car Cleaning.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

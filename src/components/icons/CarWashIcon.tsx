@@ -1,4 +1,8 @@
-const CarWashIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
+export const CarWashIcon = ({
+  className = 'w-6 h-6',
+}: {
+  className?: string;
+}) => (
   <svg
     xmlns='http://www.w3.org/2000/svg'
     fill='none'
@@ -15,5 +19,3 @@ const CarWashIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
     />
   </svg>
 );
-
-export { CarWashIcon };

@@ -1,5 +1,7 @@
-// Add the CalendarIcon component definition here
-const CalendarIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
+// src/components/icons/CalendarIcon.tsx
+export const CalendarIcon = (
+  { className = 'w-6 h-6' }: { className?: string } // Add export here
+) => (
   <svg
     xmlns='http://www.w3.org/2000/svg'
     fill='none'
@@ -16,5 +18,3 @@ const CalendarIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
     />
   </svg>
 );
-
-export { CalendarIcon };

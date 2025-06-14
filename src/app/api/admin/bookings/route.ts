@@ -2,21 +2,10 @@
 import { NextResponse } from 'next/server';
 import { Booking } from '@/types';
 import { getDb } from '@/lib/mongodb';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/shared/authOptions';
+import { withAdminAuth } from '@/lib/withAdminAuth';
 
 const bookingsCollectionName = 'bookings';
-
-export async function GET() {
-  // --- Add this session check ---
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    // If no session, return unauthorized
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
-  // --- End session check ---
-
+async function getBookingHandler() {
   try {
     const db = await getDb(); // Use the shared function
     const bookingsColl = db.collection<Booking>(bookingsCollectionName);
@@ -43,3 +32,5 @@ export async function GET() {
     );
   }
 }
+
+export const GET = withAdminAuth(getBookingHandler);

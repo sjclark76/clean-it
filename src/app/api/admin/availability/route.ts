@@ -2,8 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { UpdateResult } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/shared/authOptions'; // Import the shared utility
+import { withAdminAuth } from '@/lib/withAdminAuth'; // Import the shared utility
 
 interface TimeSlot {
   id: string;
@@ -20,16 +19,7 @@ interface DayAvailability {
 
 const collectionName = 'availabilities';
 
-export async function GET() {
-  // --- Add this session check ---
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    // If no session, return unauthorized
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
-  // --- End session check ---
-
+export async function getAvailabilityHandler() {
   try {
     const db = await getDb(); // Use the shared function
     console.log(
@@ -125,3 +115,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const GET = withAdminAuth(getAvailabilityHandler);

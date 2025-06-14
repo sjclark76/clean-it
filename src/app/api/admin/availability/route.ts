@@ -2,8 +2,8 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { UpdateResult } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { getServerSession } from 'next-auth'; // Import the shared utility
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/shared/authOptions'; // Import the shared utility
 
 interface TimeSlot {
   id: string;

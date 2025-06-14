@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { Booking } from '@/types';
 import { getDb } from '@/lib/mongodb';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'; // Import the shared utility
+import { authOptions } from '@/shared/authOptions';
 
 const bookingsCollectionName = 'bookings';
 

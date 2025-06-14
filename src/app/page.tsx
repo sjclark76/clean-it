@@ -110,7 +110,7 @@ export default function HomePage() {
               <span className=' text-purple-600'>Car Spa</span>
             </h1>
             <p className='text-lg sm:text-xl md:text-2xl text-gray-700 mb-10 max-w-2xl mx-auto'>
-              Experience the ultimate clean. We meticulously restore your
+              Experience the ultimate clean. I meticulously restore your
               car&apos;s inside shine!
             </p>
             <Link // Changed from <a> to <Link>

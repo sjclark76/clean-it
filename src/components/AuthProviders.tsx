@@ -2,6 +2,7 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
+import { Provider as JotaiProvider } from 'jotai'; // Import Jotai Provider
 import React from 'react';
 
 interface AuthProvidersProps {
@@ -9,5 +10,9 @@ interface AuthProvidersProps {
 }
 
 export default function AuthProviders({ children }: AuthProvidersProps) {
-  return <SessionProvider>{children}</SessionProvider>;
+  return (
+    <SessionProvider>
+      <JotaiProvider>{children}</JotaiProvider>
+    </SessionProvider>
+  );
 }

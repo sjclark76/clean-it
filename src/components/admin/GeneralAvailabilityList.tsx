@@ -1,30 +1,46 @@
 // src/components/admin/GeneralAvailabilityList.tsx
 'use client';
 
-import { DayAvailability, Booking } from '@/types';
+import { Booking } from '@/types';
+import { useAtomValue } from 'jotai';
+import {
+  availabilityErrorAtom,
+  isLoadingAvailabilityAtom,
+  upcomingAvailabilityAtom,
+  upcomingBookingsAtom,
+} from '@/components/admin/state';
+import { formatDateDisplay, timeToMinutes } from '@/shared/timeFunctions';
 
-interface GeneralAvailabilityListProps {
-  availability: DayAvailability[];
-  bookings: Booking[];
-  isLoading: boolean;
-  error: string | null;
-  formatDateDisplay: (dateString: string) => string;
-  isGeneralSlotBooked: (
-    // Updated signature
+export default function GeneralAvailabilityList() {
+  const availability = useAtomValue(upcomingAvailabilityAtom);
+  const isLoading = useAtomValue(isLoadingAvailabilityAtom);
+  const error = useAtomValue(availabilityErrorAtom);
+  const bookings = useAtomValue(upcomingBookingsAtom);
+
+  const isGeneralSlotBooked = (
     slotTime: string,
     dayDate: string,
-    bookings: Booking[]
-  ) => Booking['status'] | null;
-}
+    currentBookings: Booking[] // Pass current bookings to ensure fresh data
+  ): Booking['status'] | null => {
+    const slotTimeInMinutes = timeToMinutes(slotTime);
+    const activeBookingsForDay = currentBookings.filter(
+      (b) => b.date === dayDate && b.status !== 'cancelled'
+    );
 
-export default function GeneralAvailabilityList({
-  availability,
-  bookings,
-  isLoading,
-  error,
-  formatDateDisplay,
-  isGeneralSlotBooked,
-}: GeneralAvailabilityListProps) {
+    for (const booking of activeBookingsForDay) {
+      const bookingStartMinutes = timeToMinutes(booking.startTime);
+      const bookingCoversUntilMinutes = bookingStartMinutes + 150;
+
+      if (
+        slotTimeInMinutes >= bookingStartMinutes &&
+        slotTimeInMinutes < bookingCoversUntilMinutes
+      ) {
+        return booking.status;
+      }
+    }
+    return null;
+  };
+
   return (
     <div className='lg:col-span-3 bg-white p-6 md:p-8 rounded-xl shadow-xl mt-8'>
       <h2 className='text-xl md:text-2xl font-semibold mb-6 text-gray-700'>

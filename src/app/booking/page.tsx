@@ -1,33 +1,19 @@
 // src/app/booking/page.tsx
 'use client';
 
-import { useState } from 'react'; // Import useState
 import Link from 'next/link'; // Import Link
 import { CalendarIcon } from '@/components/icons/CalendarIcon';
 import BookingForm from '@/components/booking/BookingForm';
 import SecondaryPageHeader from '@/components/shared/SecondaryPageHeader';
 import Footer from '@/components/shared/Footer';
-
-const CheckCircleIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
-  <svg
-    xmlns='http://www.w3.org/2000/svg'
-    fill='none'
-    viewBox='0 0 24 24'
-    strokeWidth={1.5}
-    stroke='currentColor'
-    className={className}
-    aria-hidden='true'
-  >
-    <path
-      strokeLinecap='round'
-      strokeLinejoin='round'
-      d='M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-    />
-  </svg>
-);
+import { CheckCircleIcon } from '@/components/icons/CheckCircleIcon';
+import { useAtom } from 'jotai/index';
+import { isBookingSuccessfulAtom } from '@/components/booking/state';
 
 export default function BookingPage() {
-  const [isBookingSuccessful, setIsBookingSuccessful] = useState(false); // New state
+  const [isBookingSuccessful, setIsBookingSuccessful] = useAtom(
+    isBookingSuccessfulAtom
+  );
 
   const handleSuccessfulBooking = () => {
     setIsBookingSuccessful(true);

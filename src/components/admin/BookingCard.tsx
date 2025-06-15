@@ -2,25 +2,100 @@
 'use client';
 
 import { Booking } from '@/types';
+import { formatDateDisplay } from '@/shared/timeFunctions';
+import { useAtom, useSetAtom } from 'jotai/index';
+import {
+  editMessageAtom,
+  editMessageTypeAtom,
+  isUpdatingBookingAtom,
+  upcomingBookingsAtom,
+} from '@/components/admin/state';
 
 interface BookingCardProps {
   booking: Booking;
-  formatDateDisplay: (isoDateString: string) => string;
-  formatBookingStatus: (status: Booking['status']) => string;
-  onConfirmBooking: (bookingId: string | undefined) => Promise<void>;
-  onCancelBooking: (bookingId: string | undefined) => Promise<void>;
-  isUpdatingBooking: string | null; // Tracks which booking ID is being updated
 }
 
-export default function BookingCard({
-  booking,
-  formatDateDisplay,
-  formatBookingStatus,
-  onConfirmBooking,
-  onCancelBooking,
-  isUpdatingBooking,
-}: BookingCardProps) {
+const formatBookingStatus = (status: Booking['status']) => {
+  switch (status) {
+    case 'pending_confirmation':
+      return 'Pending';
+    case 'confirmed':
+      return 'Confirmed';
+    case 'cancelled':
+      return 'Cancelled';
+    default:
+      return status;
+  }
+};
+
+export default function BookingCard({ booking }: BookingCardProps) {
   const bookingIdStr = booking._id?.toString();
+  const setEditMessage = useSetAtom(editMessageAtom);
+  const setEditMessageType = useSetAtom(editMessageTypeAtom);
+  const [isUpdatingBooking, setIsUpdatingBooking] = useAtom(
+    isUpdatingBookingAtom
+  );
+  const setUpcomingBookings = useSetAtom(upcomingBookingsAtom);
+
+  const handleUpdateBookingStatus = async (
+    bookingId: string | undefined,
+    action: 'confirm' | 'cancel'
+  ) => {
+    if (!bookingId) return;
+
+    setIsUpdatingBooking(bookingId);
+    setEditMessage(null);
+    setEditMessageType(null);
+
+    try {
+      const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      const result = await response.json();
+
+      if (response.ok) {
+        if (action === 'cancel') {
+          setUpcomingBookings((prevBookings) =>
+            prevBookings.filter((b) => b._id?.toString() !== bookingId)
+          );
+          setEditMessage(result.message || 'Booking cancelled successfully.');
+          setEditMessageType('success');
+        } else if (action === 'confirm' && result.booking) {
+          const updatedBookingFromServer = result.booking as Booking;
+          setUpcomingBookings((prevBookings) =>
+            prevBookings.map((b) =>
+              b._id?.toString() === bookingId ? updatedBookingFromServer : b
+            )
+          );
+          setEditMessage(result.message || 'Booking confirmed successfully.');
+          setEditMessageType('success');
+        } else if (action === 'confirm' && !result.booking) {
+          setEditMessage(
+            result.message ||
+              'Confirmation processed, but booking data was not returned.'
+          );
+          setEditMessageType('error');
+        }
+      } else {
+        setEditMessage(result.message || `Failed to ${action} booking.`);
+        setEditMessageType('error');
+      }
+    } catch {
+      setEditMessage(
+        `An unexpected error occurred while ${action}ing the booking.`
+      );
+      setEditMessageType('error');
+    } finally {
+      setIsUpdatingBooking(null);
+    }
+  };
+
+  const onConfirmBooking = (bookingId: string | undefined) =>
+    handleUpdateBookingStatus(bookingId, 'confirm');
+  const onCancelBooking = (bookingId: string | undefined) =>
+    handleUpdateBookingStatus(bookingId, 'cancel');
 
   return (
     <div

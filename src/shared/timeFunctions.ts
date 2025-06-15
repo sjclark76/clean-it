@@ -18,4 +18,15 @@ const minutesToTime = (totalMinutes: number): string => {
   return `${String(hours12).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${modifier}`;
 };
 
-export { timeToMinutes, minutesToTime };
+// Formatting functions (can be part of the hook or separate utils)
+const formatDateDisplay = (dateString: string) => {
+  const dateObj = new Date(dateString + 'T00:00:00');
+  return dateObj.toLocaleDateString(undefined, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
+export { timeToMinutes, minutesToTime, formatDateDisplay };

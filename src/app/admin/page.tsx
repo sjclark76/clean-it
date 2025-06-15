@@ -5,44 +5,20 @@ import { useEffect } from 'react'; // Only useEffect needed here now
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 
-// Import the new hook
-import { useAdminPageLogic } from '@/hooks/useAdminPageLogic'; // Adjust path if needed
-
 // Import the presentational components
 import AvailabilityEditor from '@/components/admin/AvailabilityEditor';
 import UpcomingBookingsList from '@/components/admin/UpcomingBookingsList';
 import GeneralAvailabilityList from '@/components/admin/GeneralAvailabilityList';
 import SecondaryPageHeader from '@/components/shared/SecondaryPageHeader';
 import Footer from '@/components/shared/Footer';
+import { useUpcomingAvailability } from '@/hooks/useUpcomingAvailability';
+import { useUpcomingBookings } from '@/hooks/useUpcomingBookings';
 
 export default function AdminAvailabilityPage() {
   const { status } = useSession();
 
-  // Use the custom hook for all page logic
-  const {
-    selectedDateForEditing,
-    timeSlotsForEditing,
-    isSaving,
-    editMessage,
-    editMessageType,
-    upcomingAvailability,
-    isLoadingAvailability,
-    availabilityError,
-    upcomingBookings,
-    isLoadingBookings,
-    bookingsError,
-    isUpdatingBooking,
-    fetchUpcomingAvailability,
-    fetchUpcomingBookings,
-    handleDateChangeForEditing,
-    handleSlotToggleForEditing,
-    handleSubmitAvailability,
-    handleConfirmBooking,
-    handleCancelBooking,
-    formatDateDisplay,
-    formatBookingStatus,
-    isGeneralSlotBooked,
-  } = useAdminPageLogic();
+  const fetchUpcomingAvailability = useUpcomingAvailability();
+  const fetchUpcomingBookings = useUpcomingBookings();
 
   // Authentication check and initial data fetch
   useEffect(() => {
@@ -71,39 +47,9 @@ export default function AdminAvailabilityPage() {
       <SecondaryPageHeader />
 
       <main className='flex-grow container mx-auto px-6 py-8 grid lg:grid-cols-3 gap-8'>
-        <AvailabilityEditor
-          selectedDate={selectedDateForEditing}
-          timeSlots={timeSlotsForEditing}
-          isSaving={isSaving}
-          editMessage={editMessage}
-          editMessageType={editMessageType}
-          onDateChange={handleDateChangeForEditing}
-          onSlotToggle={handleSlotToggleForEditing}
-          onSubmit={handleSubmitAvailability}
-          formatDateDisplay={formatDateDisplay}
-        />
-
-        <UpcomingBookingsList
-          bookings={upcomingBookings}
-          isLoading={isLoadingBookings}
-          error={bookingsError}
-          formatDateDisplay={formatDateDisplay}
-          formatBookingStatus={formatBookingStatus}
-          onConfirmBooking={handleConfirmBooking}
-          onCancelBooking={handleCancelBooking}
-          isUpdatingBooking={isUpdatingBooking}
-        />
-
-        <GeneralAvailabilityList
-          availability={upcomingAvailability}
-          bookings={upcomingBookings} // Pass current bookings to the list
-          isLoading={isLoadingAvailability}
-          error={availabilityError}
-          formatDateDisplay={formatDateDisplay}
-          isGeneralSlotBooked={(slotTime, dayDate) =>
-            isGeneralSlotBooked(slotTime, dayDate, upcomingBookings)
-          } // Ensure it uses the current bookings from state
-        />
+        <AvailabilityEditor />
+        <UpcomingBookingsList />
+        <GeneralAvailabilityList />
       </main>
 
       <Footer />

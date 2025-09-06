@@ -10,7 +10,9 @@ import FindUsSection from '@/components/home/FindUsSection';
 import { BikeIcon } from '@/components/icons/BikeIcon';
 import NavigationBar, { NavLinkItem } from '@/components/shared/NavigationBar'; // Import new Nav
 import Footer from '@/components/shared/Footer';
-import { WavyBackground } from '@/components/ui/wavy-background'; // Import Footer
+import { WavyBackground } from '@/components/ui/wavy-background';
+import { useState } from 'react';
+import { Lens } from '@/components/ui/lens'; // Import Footer
 
 export default function HomePage() {
   const homePageNavLinks: NavLinkItem[] = [
@@ -19,6 +21,8 @@ export default function HomePage() {
     { href: '#location', label: 'Find Us' },
     { href: '/booking', label: 'Book Now', isButton: true },
   ];
+
+  const [hovering, setHovering] = useState(false);
 
   return (
     <div className='min-h-screen bg-gray-100 text-gray-800 flex flex-col font-sans'>
@@ -54,13 +58,15 @@ export default function HomePage() {
         <section id='about' className='py-16 md:py-24 bg-gray-100'>
           <div className='container mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center gap-8 md:gap-12'>
             <div className='md:w-1/2'>
-              <Image
-                src='/clean_2.jpg'
-                alt="Jessiah's Car Cleaning and Biking Goal"
-                width={1000}
-                height={1000}
-                className='rounded-lg shadow-2xl aspect-video object-cover'
-              />
+              <Lens hovering={hovering} setHovering={setHovering}>
+                <Image
+                  src='/clean_2.jpg'
+                  alt="Jessiah's Car Cleaning and Biking Goal"
+                  width={1000}
+                  height={1000}
+                  className='rounded-lg shadow-2xl aspect-video object-cover'
+                />
+              </Lens>
             </div>
             <div className='md:w-1/2'>
               <h2 className='text-3xl sm:text-4xl font-bold mb-3 text-purple-600'>

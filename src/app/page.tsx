@@ -54,10 +54,10 @@ export default function HomePage() {
           <div className='container mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center gap-8 md:gap-12'>
             <div className='md:w-1/2'>
               <Image
-                src='/car_cleaning.JPG'
+                src='/clean_2.jpg'
                 alt="Jessiah's Car Cleaning and Biking Goal"
-                width={600}
-                height={400}
+                width={1000}
+                height={1000}
                 className='rounded-lg shadow-2xl aspect-video object-cover'
               />
             </div>

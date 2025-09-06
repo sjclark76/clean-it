@@ -2,7 +2,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { UpdateResult } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
-import { withAdminAuth } from '@/lib/withAdminAuth'; // Import the shared utility
+import { withAdminAuth } from '@/lib/withAdminAuth';
 
 interface TimeSlot {
   id: string;
@@ -19,7 +19,7 @@ interface DayAvailability {
 
 const collectionName = 'availabilities';
 
-export async function getAvailabilityHandler() {
+async function getAvailabilityHandler() {
   try {
     const db = await getDb(); // Use the shared function
     console.log(
@@ -47,7 +47,7 @@ export async function getAvailabilityHandler() {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function createAvailabilityHandler(request: NextRequest) {
   try {
     const newAvailability: DayAvailability = await request.json();
 
@@ -117,3 +117,4 @@ export async function POST(request: NextRequest) {
 }
 
 export const GET = withAdminAuth(getAvailabilityHandler);
+export const POST = withAdminAuth(createAvailabilityHandler);

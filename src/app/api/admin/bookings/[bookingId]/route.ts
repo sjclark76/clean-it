@@ -3,8 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { Booking } from '@/types';
 import { getDb } from '@/lib/mongodb';
-import { withAdminAuth } from '@/lib/withAdminAuth';
-import { Session as NextAuthSession } from 'next-auth';
+import { RouteContext, RouteHandler, withAdminAuth } from '@/lib/withAdminAuth';
 
 const bookingsCollectionName = 'bookings';
 
@@ -12,17 +11,20 @@ interface PatchRequestBody {
   action: 'confirm' | 'cancel';
 }
 
-// Define the specific shape of params for this route
-interface BookingIdParams {
-  bookingId: string;
-}
-
 // Updated handler signature
-async function patchBookingHandler(
+const patchBookingHandler: RouteHandler = async (
   request: NextRequest,
-  context: { params: BookingIdParams; session: NextAuthSession } // Context now clearly typed
-) {
-  const { bookingId } = context.params; // Access params from context
+  context?: RouteContext
+) => {
+  const params = await context?.params;
+  // const params = context?.params;
+  const bookingId = params?.bookingId; // Access params from context
+
+  if (!bookingId)
+    return NextResponse.json(
+      { message: 'Invalid booking ID format' },
+      { status: 400 }
+    );
   // const session = context.session; // Session is available if needed
 
   if (!ObjectId.isValid(bookingId)) {
@@ -129,7 +131,6 @@ async function patchBookingHandler(
       { status: 500 }
     );
   }
-}
+};
 
-// Explicitly provide the generic type for params to withAdminAuth
-export const PATCH = withAdminAuth<BookingIdParams>(patchBookingHandler);
+export const PATCH = withAdminAuth(patchBookingHandler);

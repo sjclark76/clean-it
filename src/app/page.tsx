@@ -22,7 +22,7 @@ export default function HomePage() {
   return (
     <div className='min-h-screen bg-gray-100 text-gray-800 flex flex-col font-sans'>
       <NavigationBar
-        brandName="Jessiah's Car Spa"
+        brandName="Jessiah's Auto Care"
         navLinks={homePageNavLinks}
       />
 
@@ -34,7 +34,7 @@ export default function HomePage() {
             <CarWashIcon className='w-16 h-16 text-purple-500 mx-auto mb-6' />
             <h1 className='text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 tracking-tight text-gray-900'>
               <span className='block'>Jessiah&apos;s</span>
-              <span className=' text-purple-600'>Car Spa</span>
+              <span className=' text-purple-600'>Auto Care</span>
             </h1>
             <p className='text-lg sm:text-xl md:text-2xl text-gray-700 mb-10 max-w-2xl mx-auto'>
               Experience the ultimate clean. I meticulously restore your

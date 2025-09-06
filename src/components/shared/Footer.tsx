@@ -5,7 +5,7 @@ interface FooterProps {
 
 export default function Footer({ secondaryText }: FooterProps) {
   const year = new Date().getFullYear();
-  const defaultCopyright = `© ${year} Jessiah's Car Spa. All Rights Reserved.`;
+  const defaultCopyright = `© ${year} Jessiah's Auto Care. All Rights Reserved.`;
 
   return (
     <footer className='bg-gray-200 text-center py-10'>

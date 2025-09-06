@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Jessiah's Car Spa",
+  title: "Jessiah's Auto Care",
   description: 'Created by his dad',
 };
 

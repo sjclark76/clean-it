@@ -19,7 +19,7 @@ export default function SecondaryPageHeader() {
 
   return (
     <NavigationBar
-      brandName="Jessiah's Car Spa"
+      brandName="Jessiah's Auto Care"
       brandIcon={<CalendarIcon className='w-6 h-6 sm:w-7 sm:h-7 mr-2' />}
       navLinks={secondaryPageNavLinks}
     />

@@ -9,7 +9,8 @@ import { CarWashIcon } from '@/components/icons/CarWashIcon';
 import FindUsSection from '@/components/home/FindUsSection';
 import { BikeIcon } from '@/components/icons/BikeIcon';
 import NavigationBar, { NavLinkItem } from '@/components/shared/NavigationBar'; // Import new Nav
-import Footer from '@/components/shared/Footer'; // Import Footer
+import Footer from '@/components/shared/Footer';
+import { WavyBackground } from '@/components/ui/wavy-background'; // Import Footer
 
 export default function HomePage() {
   const homePageNavLinks: NavLinkItem[] = [
@@ -65,15 +66,19 @@ export default function HomePage() {
               <h2 className='text-3xl sm:text-4xl font-bold mb-3 text-purple-600'>
                 About The Business
               </h2>
-              <p className='text-gray-700 text-lg mb-6 leading-relaxed'>
-                Hi, I&apos;m Jessiah, a dedicated 13-year-old entrepreneur
-                providing quality interior car cleaning services. I started this
-                business with a clear goal in mind – saving for a new downhill
-                mountain bike to compete in the upcoming NZ Nationals. Every job
-                I complete brings me closer to achieving this dream while
-                providing excellent service to my community.
-              </p>
-
+              <WavyBackground
+                backgroundFill={'white'}
+                className='max-w-4xl mx-auto pb-40'
+              >
+                <p className='text-gray-700 text-lg mb-6 leading-relaxed'>
+                  Hi, I&apos;m Jessiah, a dedicated 13-year-old entrepreneur
+                  providing quality interior car cleaning services. I started
+                  this business with a clear goal in mind – saving for a new
+                  downhill mountain bike to compete in the upcoming NZ
+                  Nationals. Every job I complete brings me closer to achieving
+                  this dream while providing excellent service to my community.
+                </p>
+              </WavyBackground>
               <h3 className='text-2xl font-semibold mb-4 text-purple-500'>
                 Why Choose Jessiah&apos;s Service?
               </h3>

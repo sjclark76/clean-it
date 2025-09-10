@@ -10,6 +10,7 @@ export async function GET() {
     const availabilitiesColl = db.collection<DayAvailability>('availabilities');
 
     const todayStr = new Date().toISOString().split('T')[0];
+
     // Fetch all days where admin has set *any* general availability from today onwards
     const allAdminSetDays = await availabilitiesColl
       .find({
@@ -18,6 +19,8 @@ export async function GET() {
       })
       .sort({ date: 1 })
       .toArray();
+
+    console.log('STU', { allAdminSetDays });
 
     const datesWithActualSlots: DayAvailability[] = [];
 

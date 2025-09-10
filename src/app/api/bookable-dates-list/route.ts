@@ -20,8 +20,6 @@ export async function GET() {
       .sort({ date: 1 })
       .toArray();
 
-    console.log('STU', { allAdminSetDays });
-
     const datesWithActualSlots: DayAvailability[] = [];
 
     for (const day of allAdminSetDays) {

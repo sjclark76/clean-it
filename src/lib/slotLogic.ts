@@ -31,6 +31,7 @@ export async function getBookableSlotsForDateInternal(
     })
     .toArray();
 
+  console.log('STU', { dayAvailability, existingBookingsForDay });
   const bookableSlots: BookableSlotItem[] = [];
   const sortedAdminSlots = [...dayAvailability.slots].sort(
     (a, b) => timeToMinutes(a.time) - timeToMinutes(b.time)

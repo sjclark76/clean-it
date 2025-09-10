@@ -20,8 +20,8 @@ export const authOptions = {
         const adminPassword = process.env.ADMIN_PASSWORD;
 
         if (
-          credentials?.username === adminUsername &&
-          credentials?.password === adminPassword
+          credentials?.username.trim() === adminUsername &&
+          credentials?.password.trim() === adminPassword
         ) {
           // If credentials are valid, return a user object.
           // This object will be available in the session.

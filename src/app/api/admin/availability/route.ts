@@ -116,5 +116,5 @@ async function createAvailabilityHandler(request: NextRequest) {
   }
 }
 
-export const GET = withAdminAuth(getAvailabilityHandler);
+export const GET = getAvailabilityHandler;
 export const POST = withAdminAuth(createAvailabilityHandler);

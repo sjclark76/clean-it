@@ -43,7 +43,6 @@ const PREDEFINED_TIMES = [
   '06:00 PM',
   '06:30 PM',
   '07:00 PM',
-  '07:30 PM',
 ];
 
 const getDayName = (dateString: string): string => {

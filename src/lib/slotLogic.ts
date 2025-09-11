@@ -31,12 +31,11 @@ export async function getBookableSlotsForDateInternal(
     })
     .toArray();
 
-  console.log('STU', { dayAvailability, existingBookingsForDay });
   const bookableSlots: BookableSlotItem[] = [];
   const sortedAdminSlots = [...dayAvailability.slots].sort(
     (a, b) => timeToMinutes(a.time) - timeToMinutes(b.time)
   );
-  const requiredConsecutiveSlots = 5; // 2hr service (4 slots) + 0.5hr buffer (1 slot)
+  const requiredConsecutiveSlots = 4; // 2hr service (4 slots)
 
   for (
     let i = 0;

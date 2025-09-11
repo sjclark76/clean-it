@@ -11,7 +11,7 @@ export async function GET() {
 
     const todayStr = new Date().toISOString().split('T')[0];
 
-    // Fetch all days where admin has set *any* general availability from today onwards
+    // Fetch all days, where admin has set *any* general availability from today onwards
     const allAdminSetDays = await availabilitiesColl
       .find({
         date: { $gte: todayStr },
